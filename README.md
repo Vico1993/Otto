@@ -1,5 +1,8 @@
 # Otto
 
+Lorem...
+TODO: Start working on the documentation
+
 ## Setup
 
 1. Need a telegram bot, look at the great telegram [documentation](https://core.telegram.org/bots)

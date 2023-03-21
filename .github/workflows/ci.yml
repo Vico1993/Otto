@@ -1,0 +1,103 @@
+name: CI
+
+on:
+    push:
+        branches:
+            - main
+        paths-ignore:
+            - "*.md"
+            - "/**/*.md"
+            - ".github/*"
+    pull_request:
+        branches:
+            - main
+
+env:
+    TESTCOVERAGE_THRESHOLD: 90
+
+jobs:
+    test:
+        name: Test
+        runs-on: ${{ matrix.os }}
+        strategy:
+            # Fail fast is disabled because there are Go version specific features and tests
+            # that should be able to fail independently.
+            fail-fast: false
+            matrix:
+                os: [ubuntu-latest, macos-latest]
+        env:
+            COVERALLS_PARALLEL: true
+            COVERALLS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+        steps:
+            - name: Set up Go
+              uses: actions/setup-go@v3
+              with:
+                  go-version: 1.20
+
+            - name: Checkout code
+              uses: actions/checkout@v3
+
+            - name: Test
+              run: go test -race -covermode atomic -coverprofile=profile.cov ./...
+
+            - name: Install goveralls
+              run: go install github.com/mattn/goveralls@latest
+
+            - name: Send coverage
+              uses: shogo82148/actions-goveralls@v1
+              with:
+                  path-to-profile: profile.cov
+                  flag-name: Go-${{ matrix.go }}
+                  parallel: true
+
+    # notifies that all test jobs are finished.
+    finish:
+        needs: test
+        runs-on: ubuntu-latest
+        steps:
+            - uses: shogo82148/actions-goveralls@v1
+              with:
+                  parallel-finished: true
+
+    lint:
+        name: Lint
+        runs-on: ubuntu-latest
+        env:
+            GOFLAGS: -mod=readonly
+
+        steps:
+            - name: Set up Go
+              uses: actions/setup-go@v3
+              with:
+                  go-version: 1.20
+
+            - name: Checkout code
+              uses: actions/checkout@v3
+
+            - name: Lint
+              uses: golangci/golangci-lint-action@v3
+              with:
+                  version: latest
+
+            - name: Vet
+              run: |
+                  go vet ./...
+
+    build:
+        name: build
+        runs-on: ubuntu-latest
+        env:
+            GOFLAGS: -mod=readonly
+
+        steps:
+            - name: Set up Go
+              uses: actions/setup-go@v3
+              with:
+                  go-version: 1.20
+
+            - name: Checkout code
+              uses: actions/checkout@v3
+
+            - name: Ensure project compiles
+              run: make build

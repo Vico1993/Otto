@@ -12,17 +12,19 @@ import (
 	"github.com/mmcdole/gofeed"
 )
 
-var listOfFeeds = []string{
-	"https://techcrunch.com/feed/",
-	"https://rss.nytimes.com/services/xml/rss/nyt/Technology.xml",
-	"https://rss.nytimes.com/services/xml/rss/nyt/PersonalTech.xml",
-	"https://dev.to/rss",
-	"https://feeds.feedburner.com/CoingeckoBuzz",
-	"https://coinjournal.net/news/feed/",
-	"https://coinjournal.net/news/category/events/feed/",
-	"https://medium.com/feed/tag/crypto",
-	"https://medium.com/feed/tag/tech",
-	"https://rss.nytimes.com/services/xml/rss/nyt/YourMoney.xml",
+// Tags interested in
+var tags []string = []string{
+	"btc",
+	"bitcoin",
+	"vechain",
+	"apple",
+	"aapl",
+	"finance",
+	"crypto",
+	"crypto.com",
+	"cro",
+	"banks",
+	"binance",
 }
 
 // Parsed one RSS feed to extract some information
@@ -62,6 +64,8 @@ func parsedFeed(uri string) error {
 
 // Parsed all articles from the constant
 func PullNewArticles() {
+	listOfFeeds := getList()
+
 	fmt.Println("Starting aggregeting data, " + strconv.Itoa(len(listOfFeeds)) + " of feeds to analyzed")
 	start := time.Now()
 
@@ -74,4 +78,21 @@ func PullNewArticles() {
 
 	elapsed := time.Since(start)
 	utils.TelegramPostMessage("Done aggregating, took me : " + elapsed.String())
+}
+
+// Return list of feed to watch
+func getList() []string {
+	return append(
+		buildMediumFeedBasedOnTag(),
+		"https://techcrunch.com/feed/",
+		"https://rss.nytimes.com/services/xml/rss/nyt/Technology.xml",
+		"https://rss.nytimes.com/services/xml/rss/nyt/PersonalTech.xml",
+		"https://dev.to/rss",
+		"https://feeds.feedburner.com/CoingeckoBuzz",
+		"https://coinjournal.net/news/feed/",
+		"https://coinjournal.net/news/category/events/feed/",
+		"https://medium.com/feed/tag/crypto",
+		"https://medium.com/feed/tag/tech",
+		"https://rss.nytimes.com/services/xml/rss/nyt/YourMoney.xml",
+	)
 }

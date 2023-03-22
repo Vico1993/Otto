@@ -1,4 +1,5 @@
 # Otto
+![Coverage](https://img.shields.io/badge/Coverage-41.3%25-yellow)
 
 Lorem...
 TODO: Start working on the documentation

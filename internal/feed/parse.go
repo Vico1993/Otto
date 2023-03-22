@@ -47,11 +47,19 @@ func parsedFeed(uri string) error {
 			item.Categories...,
 		)
 		newItem += 1
+
+		// Include medium from notification
+		if url.Host != "medium.com" {
+			utils.TelegramUpdateTyping(true)
+			utils.TelegramPostMessage(item.Link)
+			utils.TelegramPostMessage("#" + strings.Join(item.Categories, ", #"))
+			utils.TelegramUpdateTyping(false)
+		}
 	}
 
 	if newItem > 1 {
 		elapsed := time.Since(start)
-		utils.TelegramPostMessage("Insert " + strconv.Itoa(newItem) + " new articles from " + url.Host + ", took me : " + elapsed.String())
+		fmt.Println("Insert " + strconv.Itoa(newItem) + " new articles from " + url.Host + ", took me : " + elapsed.String())
 	} else {
 		fmt.Println("Nothing to aggregated")
 	}

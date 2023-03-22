@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"strconv"
 	"time"
-
-	"github.com/Vico1993/Otto/internal/utils"
 )
 
 // Tags interested in
@@ -21,6 +19,8 @@ var tags []string = []string{
 	"cro",
 	"banks",
 	"binance",
+	"ethereum",
+	"eth",
 }
 
 // Base of feed need to look at
@@ -47,12 +47,12 @@ func PullNewArticles() {
 	for _, feed := range listOfFeeds {
 		err := parsedFeed(feed)
 		if err != nil {
-			utils.TelegramPostMessage(err.Error())
+			fmt.Println(err.Error())
 		}
 	}
 
 	elapsed := time.Since(start)
-	utils.TelegramPostMessage("Done aggregating, took me : " + elapsed.String())
+	fmt.Println("Done aggregating, took me : " + elapsed.String())
 }
 
 // Return list of feed to watch

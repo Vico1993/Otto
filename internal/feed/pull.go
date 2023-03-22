@@ -27,6 +27,20 @@ var tags []string = []string{
 	"binance",
 }
 
+// Base of feed need to look at
+var listOfFeeds []string = []string{
+	"https://techcrunch.com/feed/",
+	"https://rss.nytimes.com/services/xml/rss/nyt/Technology.xml",
+	"https://rss.nytimes.com/services/xml/rss/nyt/PersonalTech.xml",
+	"https://dev.to/rss",
+	"https://feeds.feedburner.com/CoingeckoBuzz",
+	"https://coinjournal.net/news/feed/",
+	"https://coinjournal.net/news/category/events/feed/",
+	"https://medium.com/feed/tag/crypto",
+	"https://medium.com/feed/tag/tech",
+	"https://rss.nytimes.com/services/xml/rss/nyt/YourMoney.xml",
+}
+
 // Parsed one RSS feed to extract some information
 func parsedFeed(uri string) error {
 	url, _ := url.Parse(uri)
@@ -84,15 +98,6 @@ func PullNewArticles() {
 func getList() []string {
 	return append(
 		buildMediumFeedBasedOnTag(),
-		"https://techcrunch.com/feed/",
-		"https://rss.nytimes.com/services/xml/rss/nyt/Technology.xml",
-		"https://rss.nytimes.com/services/xml/rss/nyt/PersonalTech.xml",
-		"https://dev.to/rss",
-		"https://feeds.feedburner.com/CoingeckoBuzz",
-		"https://coinjournal.net/news/feed/",
-		"https://coinjournal.net/news/category/events/feed/",
-		"https://medium.com/feed/tag/crypto",
-		"https://medium.com/feed/tag/tech",
-		"https://rss.nytimes.com/services/xml/rss/nyt/YourMoney.xml",
+		listOfFeeds...,
 	)
 }

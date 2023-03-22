@@ -9,7 +9,7 @@ import (
 
 var telegramBaseURL = "https://api.telegram.org/bot<TOKEN>"
 
-// @todo: Refactor the way I connect and interact with telegram api
+// TODO: Refactor the way I connect and interact with telegram api
 
 // Post a message in the telegram chat
 func TelegramPostMessage(text string) {

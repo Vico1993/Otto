@@ -12,15 +12,28 @@ func TestBuildMediumUrl(t *testing.T) {
 
 	urls := buildMediumFeedBasedOnTag()
 
+	// assert.Len(
+	// 	t,
+	// 	urls,
+	// 	2,
+	// 	"BuildMediumFeedBasedOnTag should return 2 elements as tags mock only return 2 elements",
+	// )
+	// assert.Equal(
+	// 	t,
+	// 	[]string{"https://medium.com/feed/tag/tag1", "https://medium.com/feed/tag/tag2"},
+	// 	urls,
+	// 	"Response doesn't match the expected value",
+	// )
+
 	assert.Len(
 		t,
 		urls,
-		2,
-		"BuildMediumFeedBasedOnTag should return 2 elements as tags mock only return 2 elements",
+		0,
+		"BuildMediumFeedBasedOnTag should be empty as Medium is disconnected",
 	)
 	assert.Equal(
 		t,
-		[]string{"https://medium.com/feed/tag/tag1", "https://medium.com/feed/tag/tag2"},
+		[]string{},
 		urls,
 		"Response doesn't match the expected value",
 	)

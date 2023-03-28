@@ -21,6 +21,7 @@ func Init() {
 
 		// Start at different time to avoid parsing all feed at the same time
 		when := getDelay(listOfFeed) * n
+		fmt.Println(url.Host + " Will start at: " + time.Now().Add(time.Duration(when)*time.Second).GoString() + " and then once an hour")
 		_, _ = s.Every(1).Hour().Tag(url.Host).StartAt(time.Now().Add(time.Duration(when) * time.Second)).Do(func() {
 			err := feed.ParsedFeed(feedurl)
 			if err != nil {

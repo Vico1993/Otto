@@ -32,5 +32,6 @@ func Init() {
 
 	fmt.Println("Connected to MongoDB!")
 
-	ArticleCollection = client.Database("otto").Collection("article-dev")
+	// TODO: Setup a correct way for dev and server. with Collection / database in the .env
+	ArticleCollection = client.Database("otto").Collection("article")
 }

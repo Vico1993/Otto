@@ -32,5 +32,5 @@ func Init() {
 
 	fmt.Println("Connected to MongoDB!")
 
-	ArticleCollection = client.Database("otto").Collection("article")
+	ArticleCollection = client.Database("otto").Collection("article-dev")
 }

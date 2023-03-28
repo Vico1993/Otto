@@ -13,7 +13,7 @@ func TestGetList(t *testing.T) {
 	// Override the tags list for the test
 	listOfFeeds = []string{"https://google.com/feed/"}
 
-	urls := getList()
+	urls := GetList()
 
 	// assert.Len(
 	// 	t,

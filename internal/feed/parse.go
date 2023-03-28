@@ -14,7 +14,7 @@ import (
 )
 
 // Parsed one RSS feed to extract some information
-func parsedFeed(uri string) error {
+func ParsedFeed(uri string) error {
 	url, _ := url.Parse(uri)
 
 	fp := gofeed.NewParser()

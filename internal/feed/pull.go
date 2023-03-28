@@ -27,18 +27,6 @@ var listOfFeeds []string = []string{
 	"https://coinjournal.net/news/feed/",
 	"https://coinjournal.net/news/category/events/feed/",
 	"https://rss.nytimes.com/services/xml/rss/nyt/YourMoney.xml",
-	"https://coinjournal.net/news/feed/",
-	"https://coinjournal.net/news/category/events/feed/",
-	"https://rss.nytimes.com/services/xml/rss/nyt/YourMoney.xml",
-	"https://coinjournal.net/news/feed/",
-	"https://coinjournal.net/news/category/events/feed/",
-	"https://rss.nytimes.com/services/xml/rss/nyt/YourMoney.xml",
-	"https://coinjournal.net/news/feed/",
-	"https://coinjournal.net/news/category/events/feed/",
-	"https://rss.nytimes.com/services/xml/rss/nyt/YourMoney.xml",
-	"https://coinjournal.net/news/feed/",
-	"https://coinjournal.net/news/category/events/feed/",
-	"https://rss.nytimes.com/services/xml/rss/nyt/YourMoney.xml",
 }
 
 // Return list of feed to watch

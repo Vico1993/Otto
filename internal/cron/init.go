@@ -25,7 +25,7 @@ func Init() {
 		// Start at different time to avoid parsing all feed at the same time
 		when := getDelay(listOfFeed) * n
 
-		s.Every(1).
+		_, err := s.Every(1).
 			Hour().
 			Tag(url.Host).
 			StartAt(time.Now().Add(time.Duration(when) * time.Minute)).
@@ -35,6 +35,10 @@ func Init() {
 					utils.TelegramPostMessage("Couldn't checked: " + url.Host + "-> " + err.Error())
 				}
 			})
+
+		if err != nil {
+			fmt.Println("Couldn't initiate the cron for: " + url.Host + " - " + err.Error())
+		}
 
 		n += 1
 	}

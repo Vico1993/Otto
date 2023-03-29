@@ -1,5 +1,6 @@
 # Otto
-![Coverage](https://img.shields.io/badge/Coverage-36.2%25-yellow)
+
+[![Coverage](https://coveralls.io/repos/github/Vico1993/Otto/badge.svg?branch=main)](https://coveralls.io/github/Vico1993/Otto?branch=main)
 
 Lorem...
 TODO: Start working on the documentation

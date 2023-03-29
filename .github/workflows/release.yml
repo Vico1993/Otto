@@ -1,8 +1,11 @@
 name: goreleaser
 
 on:
-    release:
-        types: [published]
+    # release:
+    #     types: [published]
+    push:
+        branches:
+            - test
 
 env:
     RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}

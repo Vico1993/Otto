@@ -66,36 +66,26 @@ jobs:
 
             - name: Test
               run: |
-                  go test -covermode=count -coverprofile=coverage.out ./...
-                  go tool cover -func=coverage.out -o=coverage.out
+                  go test -race -covermode atomic -coverprofile=profile.cov ./...
 
-            - name: Go Coverage Badge # Pass the `coverage.out` output to this action
-              if: matrix.os == 'ubuntu-latest'
-              uses: tj-actions/coverage-badge-go@v2
+            - name: Install goveralls
+              run: go install github.com/mattn/goveralls@latest
+
+            - name: Send coverage
+              uses: shogo82148/actions-goveralls@v1
               with:
-                  filename: coverage.out
+                  path-to-profile: profile.cov
+                  flag-name: Go-${{ matrix.os }}
+                  parallel: true
 
-            - name: Verify Changed files
-              uses: tj-actions/verify-changed-files@v14
-              if: matrix.os == 'ubuntu-latest'
-              id: verify-changed-files
+    # notifies that all test jobs are finished.
+    finish:
+        needs: test
+        runs-on: ubuntu-latest
+        steps:
+            - uses: shogo82148/actions-goveralls@v1
               with:
-                  files: README.md
-
-            - name: Commit changes
-              if: steps.verify-changed-files.outputs.files_changed == 'true' && matrix.os == 'ubuntu-latest'
-              run: |
-                  git config --local user.email "action@github.com"
-                  git config --local user.name "GitHub Action"
-                  git add README.md
-                  git commit -m "chore: Updated coverage badge."
-
-            - name: Push changes
-              if: steps.verify-changed-files.outputs.files_changed == 'true' && matrix.os == 'ubuntu-latest'
-              uses: ad-m/github-push-action@master
-              with:
-                  github_token: ${{ github.token }}
-                  branch: ${{ github.head_ref }}
+                  parallel-finished: true
 
     lint:
         name: Lint

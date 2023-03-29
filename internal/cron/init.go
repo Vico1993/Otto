@@ -15,19 +15,26 @@ func Init() {
 	s := gocron.NewScheduler(time.UTC)
 	listOfFeed := feed.GetList()
 
-	n := 0
+	n := 1
 	for _, feedurl := range listOfFeed {
-		url, _ := url.Parse(feedurl)
+		// Copy val to be sure it's not overrited with the next iteration
+		rul := feedurl
+
+		url, _ := url.Parse(rul)
 
 		// Start at different time to avoid parsing all feed at the same time
 		when := getDelay(listOfFeed) * n
-		fmt.Println(url.Host + " Will start at: " + time.Now().Add(time.Duration(when)*time.Second).GoString() + " and then once an hour")
-		_, _ = s.Every(1).Hour().Tag(url.Host).StartAt(time.Now().Add(time.Duration(when) * time.Second)).Do(func() {
-			err := feed.ParsedFeed(feedurl)
-			if err != nil {
-				utils.TelegramPostMessage("Couldn't checked: " + url.Host + "-> " + err.Error())
-			}
-		})
+
+		s.Every(1).
+			Hour().
+			Tag(url.Host).
+			StartAt(time.Now().Add(time.Duration(when) * time.Minute)).
+			Do(func() {
+				err := feed.ParsedFeed(rul)
+				if err != nil {
+					utils.TelegramPostMessage("Couldn't checked: " + url.Host + "-> " + err.Error())
+				}
+			})
 
 		n += 1
 	}

@@ -7,13 +7,14 @@ import (
 	"time"
 
 	"github.com/Vico1993/Otto/internal/feed"
-	"github.com/Vico1993/Otto/internal/utils"
+	"github.com/Vico1993/Otto/internal/service"
 	"github.com/go-co-op/gocron"
 )
 
 func Init() {
 	s := gocron.NewScheduler(time.UTC)
 	listOfFeed := feed.GetList()
+	telegram := service.NewTelegramService()
 
 	n := 1
 	for _, feedurl := range listOfFeed {
@@ -32,7 +33,7 @@ func Init() {
 			Do(func() {
 				err := feed.ParsedFeed(rul)
 				if err != nil {
-					utils.TelegramPostMessage("Couldn't checked: " + url.Host + "-> " + err.Error())
+					telegram.TelegramPostMessage("Couldn't checked: " + url.Host + "-> " + err.Error())
 				}
 			})
 

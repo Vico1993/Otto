@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/Vico1993/Otto/internal/repository"
+	"github.com/Vico1993/Otto/internal/service"
 	"github.com/Vico1993/Otto/internal/utils"
 	"github.com/mmcdole/gofeed"
 )
@@ -16,6 +17,7 @@ import (
 // Parsed one RSS feed to extract some information
 func ParsedFeed(uri string) error {
 	url, _ := url.Parse(uri)
+	telegram := service.NewTelegramService()
 
 	fp := gofeed.NewParser()
 	feed, err := fp.ParseURL(uri)
@@ -50,10 +52,10 @@ func ParsedFeed(uri string) error {
 
 		// Include medium from notification
 		if url.Host != "medium.com" {
-			utils.TelegramUpdateTyping(true)
-			utils.TelegramPostMessage(item.Link)
-			utils.TelegramPostMessage("#" + strings.Join(item.Categories, ", #"))
-			utils.TelegramUpdateTyping(false)
+			telegram.TelegramUpdateTyping(true)
+			telegram.TelegramPostMessage(item.Link)
+			telegram.TelegramPostMessage("#" + strings.Join(item.Categories, ", #"))
+			telegram.TelegramUpdateTyping(false)
 		}
 	}
 

@@ -4,9 +4,9 @@ go 1.20
 
 require (
 	github.com/go-co-op/gocron v1.19.0
-	github.com/joho/godotenv v1.5.1
 	github.com/mmcdole/gofeed v1.2.1
 	github.com/stretchr/testify v1.8.2
+	github.com/subosito/gotenv v1.4.2
 	go.mongodb.org/mongo-driver v1.11.3
 )
 

@@ -1,9 +1,7 @@
 package main
 
 import (
-	"log"
-
-	"github.com/joho/godotenv"
+	"github.com/subosito/gotenv"
 
 	"github.com/Vico1993/Otto/internal/cron"
 	"github.com/Vico1993/Otto/internal/database"
@@ -11,11 +9,7 @@ import (
 
 func main() {
 	// load .env file
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatalf("Error loading .env file")
-		return
-	}
+	gotenv.Load()
 
 	// Load the database
 	database.Init()

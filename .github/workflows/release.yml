@@ -1,8 +1,13 @@
 name: goreleaser
 
+# on:
+#     release:
+#         types: [published]
+
 on:
-    release:
-        types: [published]
+    push:
+        branches:
+            - test-deploy
 
 env:
     RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
@@ -19,15 +24,15 @@ jobs:
             - name: Set up Go
               uses: actions/setup-go@v4
 
-            - name: Run GoReleaser
-              uses: goreleaser/goreleaser-action@v4
-              with:
-                  distribution: goreleaser
-                  version: latest
-                  args: release --clean
-                  workdir: ./internal
-              env:
-                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+            # - name: Run GoReleaser
+            #   uses: goreleaser/goreleaser-action@v4
+            #   with:
+            #       distribution: goreleaser
+            #       version: latest
+            #       args: release --clean
+            #       workdir: ./internal
+            #   env:
+            #       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
             - name: Deploy to Railway
               uses: bervProject/railway-deploy@main

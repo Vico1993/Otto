@@ -8,7 +8,7 @@ import (
 )
 
 func main() {
-	// load .env file
+	// load .env file if any otherwise use env set
 	gotenv.Load()
 
 	// Load the database

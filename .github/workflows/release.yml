@@ -32,4 +32,4 @@ jobs:
             - name: Deploy to Railway
               uses: bervProject/railway-deploy@main
               with:
-                  service: "otto"
+                  service: "Otto"

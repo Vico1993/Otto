@@ -9,7 +9,7 @@ import (
 
 func main() {
 	// load .env file if any otherwise use env set
-	gotenv.Load()
+	_ = gotenv.Load()
 
 	// Load the database
 	database.Init()

@@ -47,6 +47,7 @@ jobs:
               uses: Vico1993/railway-deploy@main
               with:
                   service: ${{ env.RAILWAY_SERVICE }}
+                  railway_token: ${{ env.RAILWAY_TOKEN }}
 
             # - name: Use Node 16
             #   uses: actions/setup-node@v3

@@ -35,6 +35,6 @@ jobs:
             #       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
             - name: Deploy to Railway
-              uses: bervProject/railway-deploy@main
+              uses: Vico1993/railway-deploy@main
               with:
                   service: "Otto"

@@ -11,6 +11,7 @@ on:
 
 env:
     RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+    RAILWAY_SERVICE: Otto
 
 jobs:
     goreleaser:
@@ -34,7 +35,18 @@ jobs:
             #   env:
             #       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-            - name: Deploy to Railway
-              uses: Vico1993/railway-deploy@main
+            - name: Use Node 16
+              uses: actions/setup-node@v3
               with:
-                  service: "Otto"
+                  node-version: 16.x
+
+            - name: Install Railway
+              run: npm i -g @railway/cli
+
+            # - name: Deploy to Railway
+            #   uses: Vico1993/railway-deploy@main
+            #   with:
+            #       service: "Otto"
+
+            - name: Deploy to railway
+              run: railway up --service $RAILWAY_SERVICE

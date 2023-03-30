@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -87,4 +88,14 @@ func TestBuildData(t *testing.T) {
 
 	assert.True(t, data.Has("test"), "The key foo should be set to true")
 	assert.Equal(t, data.Encode(), "test=foo", "The key test should be equal to foo, and only 1 key should be set")
+}
+
+func TestNewTelegramService(t *testing.T) {
+	os.Setenv("TELEGRAM_USER_CHAT_ID", "TOTO")
+	os.Setenv("TELEGRAM_BOT_TOKEN", "FOO")
+
+	service := NewTelegramService()
+
+	assert.Equal(t, service.chatId, "TOTO", "ChatId who is set by the construct should return TOTO")
+	assert.Equal(t, service.baseUrl, "https://api.telegram.org/botFOO", "Url is should include FOO at the end")
 }

@@ -44,7 +44,7 @@ jobs:
                   fetch-depth: 0
 
             - name: Deploy to railway
-              uses: bervProject/railway-deploy@0.1.0-beta
+              uses: Vico1993/railway-deploy@main
               with:
                   service: ${{ env.RAILWAY_SERVICE }}
 

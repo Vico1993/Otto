@@ -44,10 +44,9 @@ jobs:
                   fetch-depth: 0
 
             - name: Deploy to railway
-              uses: Vico1993/railway-deploy@main
+              uses: bervProject/railway-deploy@0.1.0-beta
               with:
                   service: ${{ env.RAILWAY_SERVICE }}
-                  railway_token: ${{ env.RAILWAY_TOKEN }}
 
             # - name: Use Node 16
             #   uses: actions/setup-node@v3

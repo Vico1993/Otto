@@ -4,6 +4,9 @@ on:
     release:
         types: [published]
 
+env:
+    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
 jobs:
     goreleaser:
         runs-on: ubuntu-latest
@@ -23,8 +26,6 @@ jobs:
                   version: latest
                   args: release --clean
                   workdir: ./internal
-              env:
-                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     railway:
         runs-on: ubuntu-latest
@@ -35,15 +36,10 @@ jobs:
             - name: Checkout
               uses: actions/checkout@v3
               with:
-                fetch-depth: 0
-
-            - name: Use Node 16
-              uses: actions/setup-node@v3
-              with:
-                  node-version: 16.x
-
-            - name: Install Railway
-              run: npm i -g @railway/cli
+                  fetch-depth: 0
 
             - name: Deploy to railway
-              run: railway up --detach --service $RAILWAY_SERVICE
+              uses: bervProject/railway-deploy@0.1.2-beta
+              with:
+                  service: ${{ env.RAILWAY_SERVICE }}
+                  detach: true

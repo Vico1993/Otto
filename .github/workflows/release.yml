@@ -47,6 +47,7 @@ jobs:
               uses: Vico1993/railway-deploy@detach
               with:
                   service: ${{ env.RAILWAY_SERVICE }}
+                  detach: true
 
             # - name: Use Node 16
             #   uses: actions/setup-node@v3

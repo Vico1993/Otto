@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/subosito/gotenv"
 
+	"github.com/Vico1993/Otto/internal/bot"
 	"github.com/Vico1993/Otto/internal/cron"
 	"github.com/Vico1993/Otto/internal/database"
 )
@@ -16,4 +17,7 @@ func main() {
 
 	// Initialisation of the cron
 	cron.Init()
+
+	// bot
+	bot.Init()
 }

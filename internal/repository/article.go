@@ -29,7 +29,7 @@ func CreateArticle(title string, published string, link string, source string, t
 
 	_, err := database.ArticleCollection.InsertOne(context.TODO(), article)
 	if err != nil {
-		fmt.Println("Couldn't find the article: " + err.Error())
+		fmt.Println("Couldn't insert the article: " + err.Error())
 		return nil
 	}
 

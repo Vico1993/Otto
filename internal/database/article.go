@@ -13,7 +13,13 @@ type Article struct {
 	Tags      []string
 }
 
-func NewArticle(title string, published string, link string, source string, tags ...string) *Article {
+func NewArticle(
+	title string,
+	published string,
+	link string,
+	source string,
+	tags ...string,
+) *Article {
 	return &Article{
 		Title:     title,
 		Published: published,

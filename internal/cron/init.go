@@ -48,7 +48,7 @@ func Init() {
 
 	// Start executing cron Async
 	// For now..
-	s.StartBlocking()
+	s.StartAsync()
 }
 
 func getDelay(listOfFeed []string) int {

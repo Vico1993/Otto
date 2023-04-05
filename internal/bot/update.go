@@ -1,7 +1,6 @@
 package bot
 
 import (
-	"fmt"
 	"math/rand"
 	"os"
 	"strconv"
@@ -43,13 +42,12 @@ func handleUpdates(update tgbotapi.Update, bot *tgbotapi.BotAPI) {
 		// TODO: Get lang update.Message.From.LanguageCode to update response
 
 		from := update.Message.From
-		user := repository.FindBannedUserByTelegramId(from.ID)
-		fmt.Println("user", user)
+		user := repository.BannedUser.Find("telegramid", from.ID)
 		if user != nil {
 			return
 		}
 
-		repository.CreateBannedUser(
+		repository.BannedUser.Create(
 			from.ID,
 			from.FirstName,
 			from.LastName,

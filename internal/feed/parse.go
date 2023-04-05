@@ -36,12 +36,12 @@ func ParsedFeed(uri string) error {
 		}
 
 		// Looking into the DB to find if it's a new article...
-		article := repository.FindArticleByTitle(item.Title)
+		article := repository.Article.Find("title", item.Title)
 		if article != nil {
 			continue
 		}
 
-		repository.CreateArticle(
+		repository.Article.Create(
 			item.Title,
 			item.Published,
 			item.Link,

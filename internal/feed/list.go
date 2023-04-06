@@ -27,6 +27,8 @@ var listOfFeeds []string = []string{
 	"https://coinjournal.net/news/feed/",
 	"https://coinjournal.net/news/category/events/feed/",
 	"https://rss.nytimes.com/services/xml/rss/nyt/YourMoney.xml",
+	"https://waxy.org/feed/",
+	"https://news.ycombinator.com/rss",
 }
 
 // Return list of feed to watch

@@ -1,6 +1,7 @@
 package bot
 
 import (
+	"log"
 	"math/rand"
 	"os"
 	"strconv"
@@ -38,7 +39,6 @@ func shouldAct(update tgbotapi.Update) bool {
 
 func handleUpdates(update tgbotapi.Update, bot *tgbotapi.BotAPI) {
 	if !shouldAct(update) {
-		// TODO: Log this why we don't act upon it
 		// TODO: Get lang update.Message.From.LanguageCode to update response
 
 		from := update.Message.From
@@ -56,28 +56,11 @@ func handleUpdates(update tgbotapi.Update, bot *tgbotapi.BotAPI) {
 			from.IsBot,
 		)
 
-		msg := tgbotapi.NewMessage(
-			update.Message.Chat.ID,
-			default_answer[rand.Intn(len(default_answer))],
-		)
-		msg.ReplyToMessageID = update.Message.MessageID
+		log.Default().Println("New user banned")
 
-		_, err := bot.Send(msg)
-		if err != nil {
-			panic("Couldn't send message")
-		}
-
+		postInConv(bot, *update.Message, default_answer[rand.Intn(len(default_answer))], true)
 		return
 	}
 
-	msg := tgbotapi.NewMessage(
-		update.Message.Chat.ID,
-		"Bonjour toi!",
-	)
-	msg.ReplyToMessageID = update.Message.MessageID
-
-	_, err := bot.Send(msg)
-	if err != nil {
-		panic("Couldn't send message")
-	}
+	postInConv(bot, *update.Message, "Bonjour toi!", true)
 }

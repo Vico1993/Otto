@@ -16,10 +16,6 @@ func (m *MockBot) Send(msg tgbotapi.Chattable) (tgbotapi.Message, error) {
 	return tgbotapi.Message{}, args.Error(1)
 }
 
-func (m *MockBot) getBotAPI() BotAPI {
-	return m
-}
-
 func TestPostInConvWithoutReply(t *testing.T) {
 	bot := new(MockBot)
 

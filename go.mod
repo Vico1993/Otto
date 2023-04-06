@@ -10,6 +10,8 @@ require (
 	go.mongodb.org/mongo-driver v1.11.3
 )
 
+require github.com/stretchr/objx v0.5.0 // indirect
+
 require (
 	github.com/PuerkitoBio/goquery v1.8.0 // indirect
 	github.com/andybalholm/cascadia v1.3.1 // indirect

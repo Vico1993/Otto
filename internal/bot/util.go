@@ -7,8 +7,12 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
+type BotAPI interface {
+	Send(msg tgbotapi.Chattable) (tgbotapi.Message, error)
+}
+
 // Push a message in the conversation
-func postInConv(bot *tgbotapi.BotAPI, message tgbotapi.Message, text string, reply bool) {
+func postInConv(bot BotAPI, message tgbotapi.Message, text string, reply bool) {
 	msg := tgbotapi.NewMessage(
 		message.Chat.ID,
 		text,

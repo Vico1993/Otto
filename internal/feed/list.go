@@ -29,6 +29,7 @@ var listOfFeeds []string = []string{
 	"https://rss.nytimes.com/services/xml/rss/nyt/YourMoney.xml",
 	"https://waxy.org/feed/",
 	"https://news.ycombinator.com/rss",
+	"https://www.theverge.com/rss/index.xml",
 }
 
 // Return list of feed to watch

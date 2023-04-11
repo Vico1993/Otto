@@ -30,6 +30,7 @@ var listOfFeeds []string = []string{
 	"https://waxy.org/feed/",
 	"https://news.ycombinator.com/rss",
 	"https://www.theverge.com/rss/index.xml",
+	"https://news.bitcoin.com/feed/",
 }
 
 // Return list of feed to watch

@@ -6,22 +6,19 @@ import (
 
 	"github.com/Vico1993/Otto/internal/database"
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
 )
 
-var Article sArticleRepository = sArticleRepository{
-	collection: database.ArticleCollection,
-}
+// TODO: Find a way to correctly initiate database collection
+var Article sArticleRepository
 
 type sArticleRepository struct {
-	collection *mongo.Collection
 }
 
 // Create a new Article in the DB
 func (r sArticleRepository) Create(title string, published string, link string, source string, tags ...string) *database.Article {
 	article := database.NewArticle(title, published, link, source, tags...)
 
-	_, err := r.collection.InsertOne(context.TODO(), article)
+	_, err := database.ArticleCollection.InsertOne(context.TODO(), article)
 
 	if err != nil {
 		return nil
@@ -36,7 +33,7 @@ func (r sArticleRepository) Find(key string, val string) *database.Article {
 
 	fmt.Println("Searching for Article with key: ", key, " value: ", val)
 
-	err := r.collection.FindOne(context.TODO(), bson.D{{Key: key, Value: val}}).
+	err := database.ArticleCollection.FindOne(context.TODO(), bson.D{{Key: key, Value: val}}).
 		Decode(&article)
 
 	if err != nil {

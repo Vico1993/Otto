@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/Vico1993/Otto/internal/database"
 	"go.mongodb.org/mongo-driver/bson"
@@ -37,6 +38,7 @@ func (r sArticleRepository) Find(key string, val string) *database.Article {
 		Decode(&article)
 
 	if err != nil {
+		fmt.Println("Error finding:", err)
 		return nil
 	}
 

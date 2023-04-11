@@ -34,6 +34,8 @@ func (r sArticleRepository) Create(title string, published string, link string, 
 func (r sArticleRepository) Find(key string, val string) *database.Article {
 	var article *database.Article
 
+	fmt.Println("Searching for Article with key: ", key, " value: ", val)
+
 	err := r.collection.FindOne(context.TODO(), bson.D{{Key: key, Value: val}}).
 		Decode(&article)
 

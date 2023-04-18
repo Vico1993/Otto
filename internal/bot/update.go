@@ -42,18 +42,20 @@ func handleUpdates(update tgbotapi.Update, bot *tgbotapi.BotAPI) {
 		// TODO: Get lang update.Message.From.LanguageCode to update response
 
 		from := update.Message.From
-		user := repository.BannedUser.Find("telegramid", from.ID)
+		user := repository.User.FindById(from.ID)
 		if user != nil {
 			return
 		}
 
-		repository.BannedUser.Create(
+		repository.User.Create(
+			update.Message.Chat.ID,
 			from.ID,
 			from.FirstName,
 			from.LastName,
 			from.UserName,
 			from.LanguageCode,
 			from.IsBot,
+			true,
 		)
 
 		log.Default().Println("New user banned")

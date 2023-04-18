@@ -13,6 +13,7 @@ import (
 
 var ArticleCollection *mongo.Collection = nil
 var BannedUserCollection *mongo.Collection = nil
+var UserCollection *mongo.Collection = nil
 
 func Init() {
 	clientOptions := options.Client().ApplyURI(os.Getenv("MONGO_URI"))
@@ -36,4 +37,5 @@ func Init() {
 	// TODO: Setup a correct way for dev and server. with Collection / database in the .env
 	ArticleCollection = client.Database("otto").Collection("article")
 	BannedUserCollection = client.Database("otto").Collection("banned_user")
+	UserCollection = client.Database("otto").Collection("user")
 }

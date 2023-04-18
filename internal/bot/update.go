@@ -1,6 +1,7 @@
 package bot
 
 import (
+	"fmt"
 	"log"
 	"math/rand"
 	"os"
@@ -64,5 +65,22 @@ func handleUpdates(update tgbotapi.Update, bot *tgbotapi.BotAPI) {
 		return
 	}
 
-	postInConv(bot, *update.Message, "Bonjour toi!", true)
+	if update.Message != nil {
+		fmt.Println("New Message")
+		// if it's a valid command
+		if cmd := isValidCommand(update.Message.Command()); update.Message.IsCommand() && cmd != nil {
+			(*cmd).Execute(bot, *update.Message)
+		}
+	} else if update.CallbackQuery != nil {
+		fmt.Println("New CallBackQuery")
+		// And finally, send a message containing the data received.
+		msg := tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, update.CallbackQuery.Data)
+		if _, err := bot.Send(msg); err != nil {
+			panic(err)
+		}
+
+		if cmd := isValidCommand(update.CallbackQuery.Message.ReplyToMessage.Command()); update.CallbackQuery.Message.ReplyToMessage.IsCommand() && cmd != nil {
+			(*cmd).Reply(bot, *update.CallbackQuery.Message.ReplyToMessage, update.CallbackQuery.Data)
+		}
+	}
 }

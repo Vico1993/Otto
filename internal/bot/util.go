@@ -22,7 +22,12 @@ func postInConv(bot BotAPI, message tgbotapi.Message, text string, reply bool) {
 		msg.ReplyToMessageID = message.MessageID
 	}
 
-	_, err := bot.Send(msg)
+	sendMessage(bot, msg)
+}
+
+// Just send a Message
+func sendMessage(bot BotAPI, message tgbotapi.MessageConfig) {
+	_, err := bot.Send(message)
 	if err != nil {
 		fmt.Println()
 		fmt.Println(err.Error())
@@ -31,8 +36,19 @@ func postInConv(bot BotAPI, message tgbotapi.Message, text string, reply bool) {
 		logger.Println("---------------------------")
 		logger.Println("Error")
 		logger.Println("Couldn't speak in the conversation")
-		logger.Println("Tried to say ", text)
+		logger.Println("Tried to say ", message.Text)
 		logger.Println(err.Error())
 		logger.Println("---------------------------")
 	}
+}
+
+// Check if the command receive is valid
+func isValidCommand(cmdString string) *BotCmd {
+	for _, command := range ListCmd {
+		if command.GetCmdString() == cmdString {
+			return &command
+		}
+	}
+
+	return nil
 }

@@ -11,6 +11,17 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
+type mockBotCmd struct {
+	mock.Mock
+}
+
+func (c *mockBotCmd) GetCmdString() string {
+	return "init"
+}
+
+func (c *mockBotCmd) Execute(bot BotAPI, message tgbotapi.Message)            {}
+func (c *mockBotCmd) Reply(bot BotAPI, message tgbotapi.Message, data string) {}
+
 type MockBot struct {
 	mock.Mock
 }
@@ -88,4 +99,22 @@ func TestPostInConvBotSendError(t *testing.T) {
 
 	assert.Contains(t, buf.String(), "STOOOOOP")
 	assert.Contains(t, buf.String(), "Couldn't speak in the conversation")
+}
+
+func TestIfNotValidCommandUse(t *testing.T) {
+	ListCmd = []BotCmd{}
+
+	res := isValidCommand("SUPER_COMMAND_USENR_JDFAJFAJ")
+
+	assert.Nil(t, res, "This command should not exist")
+}
+
+func TestValidCommand(t *testing.T) {
+	ListCmd = []BotCmd{
+		new(mockBotCmd),
+	}
+
+	res := isValidCommand("init")
+
+	assert.NotNil(t, res, "The init command should be present")
 }

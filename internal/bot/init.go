@@ -4,6 +4,7 @@ import (
 	"log"
 	"os"
 
+	"github.com/Vico1993/Otto/internal/service"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
@@ -12,6 +13,8 @@ func Init() {
 	if err != nil {
 		log.Panic(err)
 	}
+
+	service.NewTelegramService().TelegramPostMessage("Just received an updates!")
 
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = 30

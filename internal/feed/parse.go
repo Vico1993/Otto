@@ -50,7 +50,7 @@ func ParsedFeed(uri string) error {
 		if url.Host != "medium.com" {
 			telegram.TelegramUpdateTyping(true)
 			telegram.TelegramPostMessage(item.Link)
-			telegram.TelegramPostMessage("Sounds interesting: #" + strings.Join(match, ", #"))
+			telegram.TelegramPostMessage("#" + strings.Join(match, ", #"))
 			telegram.TelegramUpdateTyping(false)
 		}
 	}

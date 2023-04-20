@@ -31,7 +31,8 @@ func ParsedFeed(uri string) error {
 	var newItem int = 0
 	for _, item := range feed.Items {
 		// If the category doesn't match with the interest tags
-		if !isCategoriesAndTagsMatch(item.Categories) {
+		match := isCategoriesAndTagsMatch(item.Categories)
+		if len(match) == 0 {
 			continue
 		}
 
@@ -54,7 +55,7 @@ func ParsedFeed(uri string) error {
 		if url.Host != "medium.com" {
 			telegram.TelegramUpdateTyping(true)
 			telegram.TelegramPostMessage(item.Link)
-			telegram.TelegramPostMessage("#" + strings.Join(item.Categories, ", #"))
+			telegram.TelegramPostMessage("Sounds interesting: #" + strings.Join(match, ", #"))
 			telegram.TelegramUpdateTyping(false)
 		}
 	}
@@ -70,12 +71,14 @@ func ParsedFeed(uri string) error {
 }
 
 // find if a list of categories is in tags
-func isCategoriesAndTagsMatch(categories []string) bool {
+// and return the list of tags present in the categories
+func isCategoriesAndTagsMatch(categories []string) []string {
+	match := []string{}
 	for _, category := range categories {
 		if utils.InSlice(strings.ToLower(category), tags) {
-			return true
+			match = append(match, strings.ToLower(category))
 		}
 	}
 
-	return false
+	return match
 }

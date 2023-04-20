@@ -35,8 +35,5 @@ var listOfFeeds []string = []string{
 
 // Return list of feed to watch
 func GetList() []string {
-	return append(
-		buildMediumFeedBasedOnTag(),
-		listOfFeeds...,
-	)
+	return listOfFeeds
 }

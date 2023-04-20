@@ -1,16 +1,13 @@
 name: CI
 
 on:
-    push:
+    pull_request:
         branches:
             - main
         paths-ignore:
             - "*.md"
             - "/**/*.md"
             - ".github/*"
-    pull_request:
-        branches:
-            - main
 
 env:
     TESTCOVERAGE_THRESHOLD: 90

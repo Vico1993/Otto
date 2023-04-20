@@ -2,11 +2,9 @@ package feed
 
 import (
 	"errors"
-	"fmt"
+	"log"
 	"net/url"
-	"strconv"
 	"strings"
-	"time"
 
 	"github.com/Vico1993/Otto/internal/repository"
 	"github.com/Vico1993/Otto/internal/service"
@@ -25,10 +23,8 @@ func ParsedFeed(uri string) error {
 		return errors.New("Couldn't parsed " + url.Host + ": " + err.Error())
 	}
 
-	fmt.Println("Start parsing : " + url.Host)
-	start := time.Now()
+	log.Default().Println("Waiking up")
 
-	var newItem int = 0
 	for _, item := range feed.Items {
 		// If the category doesn't match with the interest tags
 		match := isCategoriesAndTagsMatch(item.Categories)
@@ -49,22 +45,14 @@ func ParsedFeed(uri string) error {
 			feed.Title,
 			item.Categories...,
 		)
-		newItem += 1
 
-		// Include medium from notification
+		// Exclude medium from notification
 		if url.Host != "medium.com" {
 			telegram.TelegramUpdateTyping(true)
 			telegram.TelegramPostMessage(item.Link)
 			telegram.TelegramPostMessage("Sounds interesting: #" + strings.Join(match, ", #"))
 			telegram.TelegramUpdateTyping(false)
 		}
-	}
-
-	if newItem > 1 {
-		elapsed := time.Since(start)
-		fmt.Println("Insert " + strconv.Itoa(newItem) + " new articles from " + url.Host + ", took me : " + elapsed.String())
-	} else {
-		fmt.Println("Nothing to aggregated")
 	}
 
 	return nil

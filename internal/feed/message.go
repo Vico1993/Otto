@@ -5,6 +5,7 @@ import (
 	"strings"
 )
 
+// TODO: Remplace this by CHATGPT one day
 var templates []string = []string{
 	`
 Hey! 👋
@@ -90,6 +91,7 @@ $TAGS$
 `,
 }
 
+// Will inject the parameters into the template choose randomly.
 func BuildMessage(title string, platform string, author string, tags []string, link string) string {
 	text := templates[rand.Intn(len(templates))]
 	replacer := strings.NewReplacer("$TITLE$", title, "$AUTHOR$", author, "$PLATFORM$", platform, "$TAGS$", "#"+strings.Join(tags, ", #"), "$LINK$", link)

@@ -49,8 +49,15 @@ func ParsedFeed(uri string) error {
 		// Exclude medium from notification
 		if url.Host != "medium.com" {
 			telegram.TelegramUpdateTyping(true)
-			telegram.TelegramPostMessage(item.Link)
-			telegram.TelegramPostMessage("#" + strings.Join(match, ", #"))
+			telegram.TelegramPostMessage(
+				BuildMessage(
+					item.Title,
+					feed.Title,
+					item.Author.Name,
+					match,
+					item.Link,
+				),
+			)
 			telegram.TelegramUpdateTyping(false)
 		}
 	}

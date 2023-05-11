@@ -33,7 +33,7 @@ func Init() {
 			Do(func() {
 				err := feed.ParsedFeed(rul)
 				if err != nil {
-					telegram.TelegramPostMessage("Couldn't checked: " + url.Host + "-> " + err.Error())
+					telegram.TelegramPostMessage("Couldn't checked: *" + url.Host + "*-> _" + err.Error() + "_")
 				}
 			})
 

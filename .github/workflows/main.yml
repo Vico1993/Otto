@@ -21,14 +21,14 @@ jobs:
               with:
                   go-version: ${{ env.GO_VERSION }}
 
+            - name: Checkout code
+              uses: actions/checkout@v3
+
             - name: Verify Deps
               run: go mod verify
 
             - name: Build Deps
               run: go mod download
-
-            - name: Checkout code
-              uses: actions/checkout@v3
 
             - name: Ensure project compiles
               run: make build

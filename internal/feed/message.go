@@ -75,7 +75,7 @@ Check it out!
 `, `
 *$TITLE$*,
 
-_$AUTHOR's$_ _$PLATFORM$_ article explores this topic $TAGS$.
+_$AUTHOR$'s_ _$PLATFORM$_ article explores this topic $TAGS$.
 
 If you're curious, give it a read!
 

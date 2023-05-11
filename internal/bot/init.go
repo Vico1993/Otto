@@ -14,7 +14,7 @@ func Init() {
 		log.Panic(err)
 	}
 
-	service.NewTelegramService().TelegramPostMessage("Just received an updates!")
+	service.NewTelegramService().TelegramPostMessage(`*Upgrade complete*! Ready to be even smarter and funnier than before. 🤖 🚀 ✨`)
 
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = 30

@@ -22,8 +22,9 @@ func NewTelegramService() *TelegramService {
 
 func (s *TelegramService) TelegramPostMessage(text string) {
 	data := buildData(map[string]string{
-		"chat_id": s.chatId,
-		"text":    text,
+		"chat_id":    s.chatId,
+		"text":       text,
+		"parse_mode": "markdown",
 	})
 
 	_, err := http.Post(

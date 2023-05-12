@@ -2,10 +2,12 @@ name: Release
 
 on:
     release:
-        types: [published]
+        types: [released]
 
 env:
     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+    RAILWAY_SERVICE: Otto
 
 jobs:
     goreleaser:
@@ -29,9 +31,6 @@ jobs:
 
     railway:
         runs-on: ubuntu-latest
-        env:
-            RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-            RAILWAY_SERVICE: Otto
         steps:
             - name: Checkout
               uses: actions/checkout@v3

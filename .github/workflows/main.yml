@@ -4,7 +4,6 @@ on:
     push:
         branches:
             - main
-            - minor_tag
 
 env:
     GO_VERSION: 1.20.2

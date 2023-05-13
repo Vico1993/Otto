@@ -142,7 +142,6 @@ jobs:
               env:
                   WITH_V: true
                   DRY_RUN: true
-                  DEFAULT_BUMP: patch
 
             - name: Find if bot already commented
               uses: peter-evans/find-comment@v2

@@ -97,7 +97,6 @@ jobs:
               env:
                   WITH_V: true
                   DRY_RUN: true
-                  DEFAULT_BUMP: patch
 
             - name: Create release
               run: |

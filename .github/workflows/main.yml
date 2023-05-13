@@ -4,6 +4,9 @@ on:
     push:
         branches:
             - main
+        paths-ignore:
+            - "*.md"
+            - "/**/*.md"
 
 env:
     GO_VERSION: 1.20.2

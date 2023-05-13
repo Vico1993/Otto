@@ -4,10 +4,8 @@ on:
     pull_request:
         branches:
             - main
-        paths-ignore:
-            - "*.md"
-            - "/**/*.md"
-            - ".github/*"
+        paths:
+            - "**.go"
 
 env:
     TESTCOVERAGE_THRESHOLD: 90

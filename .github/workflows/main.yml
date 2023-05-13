@@ -101,4 +101,4 @@ jobs:
 
             - name: Create release
               run: |
-                  gh release create ${{ steps.tag_version.outputs.new_tag }} -p --generate-notes -d
+                  gh release create ${{ steps.tag_version.outputs.new_tag }} -p --generate-notes

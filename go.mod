@@ -3,14 +3,17 @@ module github.com/Vico1993/Otto
 go 1.20
 
 require (
-	github.com/go-co-op/gocron v1.25.0
+	github.com/go-co-op/gocron v1.27.0
 	github.com/mmcdole/gofeed v1.2.1
 	github.com/stretchr/testify v1.8.2
 	github.com/subosito/gotenv v1.4.2
 	go.mongodb.org/mongo-driver v1.11.6
 )
 
-require github.com/stretchr/objx v0.5.0 // indirect
+require (
+	github.com/stretchr/objx v0.5.0 // indirect
+	go.uber.org/atomic v1.9.0 // indirect
+)
 
 require (
 	github.com/PuerkitoBio/goquery v1.8.1 // indirect

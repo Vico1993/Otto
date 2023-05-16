@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+
 	"github.com/subosito/gotenv"
 
 	"github.com/Vico1993/Otto/internal/bot"
@@ -9,6 +11,8 @@ import (
 )
 
 func main() {
+	fmt.Println("test lll")
+
 	// load .env file if any otherwise use env set
 	_ = gotenv.Load()
 

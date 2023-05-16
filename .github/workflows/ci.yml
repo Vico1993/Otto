@@ -10,6 +10,7 @@ on:
 env:
     TESTCOVERAGE_THRESHOLD: 90
     GO_VERSION: 1.20.2
+    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 jobs:
     deps:
@@ -134,30 +135,11 @@ jobs:
             - name: Checkout code
               uses: actions/checkout@v3
 
-            - name: Bump version and push tag
-              id: tag_version
-              uses: anothrNick/github-tag-action@1.64.0
-              env:
-                  WITH_V: true
-                  DRY_RUN: true
-
-            - name: Find if bot already commented
-              uses: peter-evans/find-comment@v2
-              id: find-comment
+            - name: Bump version
+              uses: apomalyn/bump-version-using-labels
               with:
-                  issue-number: ${{ github.event.pull_request.number }}
-                  comment-author: "github-actions[bot]"
-                  body-includes: |
-                      Once PR Merged, the new version will be :
-
-            - name: Create or update comment from bot
-              uses: peter-evans/create-or-update-comment@v3
-              with:
-                  comment-id: ${{ steps.find-comment.outputs.comment-id }}
-                  issue-number: ${{ github.event.pull_request.number }}
-                  body: |
-                      Once PR Merged, the new version will be : ${{ steps.tag_version.outputs.new_tag }}
-                  edit-mode: replace
-                  reactions: |
-                      +1
-                      hooray
+                  file_path: "manifest.json"
+                  comment: true
+                  patch_label: "#patch"
+                  minor_label: "#minor"
+                  major_label: "#major"

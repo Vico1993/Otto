@@ -93,13 +93,13 @@ jobs:
         steps:
             - uses: zendesk/checkout@v3
 
-            - name: Bump version and push tag
-              id: tag_version
-              uses: anothrNick/github-tag-action@1.64.0
-              env:
-                  WITH_V: true
-                  DRY_RUN: true
+            - name: Get Manifest version
+              id: manifest-version
+              run: |
+                  echo "Reading manifest.json from ./manifest.json"
+                  PACKAGE_VERSION=$(cat ./manifest.json | jq '.version' | tr -d '"')
+                  echo "current-version=$PACKAGE_VERSION" >> $GITHUB_OUTPUT
 
             - name: Create release
               run: |
-                  gh release create ${{ steps.tag_version.outputs.new_tag }} -p --generate-notes
+                  gh release create ${{ steps.manifest-version.outputs.current-version }} -p --generate-notes

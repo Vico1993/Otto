@@ -128,7 +128,7 @@ jobs:
               run: make build
 
     version:
-        name: version comment
+        name: Bump version
         needs: build
         runs-on: ubuntu-latest
         steps:
@@ -136,7 +136,8 @@ jobs:
               uses: actions/checkout@v3
 
             - name: Bump version
-              uses: apomalyn/bump-version-using-labels@1.5.0
+              if: false == contains(github.event.pull_request.labels.*.name, '#none')
+              uses: apomalyn/bump-version-using-labels@v1.5.0
               with:
                   file_path: "manifest.json"
                   comment: true

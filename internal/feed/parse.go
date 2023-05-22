@@ -12,6 +12,23 @@ import (
 	"github.com/mmcdole/gofeed"
 )
 
+// Tags interested in
+var tags []string = []string{
+	"btc",
+	"bitcoin",
+	"vechain",
+	"apple",
+	"aapl",
+	"finance",
+	"crypto",
+	"crypto.com",
+	"cro",
+	"banks",
+	"binance",
+	"ethereum",
+	"eth",
+}
+
 // Parsed one RSS feed to extract some information
 func ParsedFeed(uri string) error {
 	url, _ := url.Parse(uri)

@@ -13,6 +13,7 @@ import (
 
 var ArticleCollection *mongo.Collection = nil
 var BannedUserCollection *mongo.Collection = nil
+var FeedCollection *mongo.Collection = nil
 
 func Init() {
 	clientOptions := options.Client().ApplyURI(os.Getenv("MONGO_URI"))
@@ -33,7 +34,7 @@ func Init() {
 
 	fmt.Println("Connected to MongoDB!")
 
-	// TODO: Setup a correct way for dev and server. with Collection / database in the .env
-	ArticleCollection = client.Database("otto").Collection("article")
-	BannedUserCollection = client.Database("otto").Collection("banned_user")
+	ArticleCollection = client.Database(os.Getenv("MONGO_DATABASE")).Collection("article")
+	BannedUserCollection = client.Database(os.Getenv("MONGO_DATABASE")).Collection("banned_user")
+	FeedCollection = client.Database(os.Getenv("MONGO_DATABASE")).Collection("feeds")
 }

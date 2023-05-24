@@ -2,7 +2,6 @@ package feed
 
 import (
 	"errors"
-	"log"
 	"net/url"
 	"strings"
 
@@ -39,8 +38,6 @@ func ParsedFeed(uri string) error {
 	if err != nil {
 		return errors.New("Couldn't parsed " + url.Host + ": " + err.Error())
 	}
-
-	log.Default().Println("Waiking up")
 
 	for _, item := range feed.Items {
 		// If the category doesn't match with the interest tags

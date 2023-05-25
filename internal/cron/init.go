@@ -41,7 +41,10 @@ func getDelay(numberOfFeed int) int {
 // Start the cron again
 func ResetCronForChatId(chatId string) {
 	// Remove the previous one if any
-	scheduler.RemoveByTag(chatId)
+	err := scheduler.RemoveByTag(chatId)
+	if err != nil {
+		fmt.Println("Couldn't clean tag " + chatId + " - " + err.Error())
+	}
 
 	listOfFeed := repository.Feed.FindByChatId(chatId)
 

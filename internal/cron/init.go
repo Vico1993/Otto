@@ -14,11 +14,36 @@ import (
 
 // TODO: Move this code into something CHAT_ID specific... maybe at /init ?
 var scheduler = gocron.NewScheduler(time.UTC)
+var telegram = service.NewTelegramService()
 
 // Initialisation of the cronjob at the start of the program
 func Init() {
-	listOfFeed := repository.Feed.FindByChatId(os.Getenv("TELEGRAM_USER_CHAT_ID"))
-	telegram := service.NewTelegramService()
+	chatIds := repository.Feed.GetDistinctChatId()
+
+	// Load all chatId and set each cron
+	for _, chatId := range chatIds {
+		ResetCronForChatId(fmt.Sprint(chatId))
+	}
+
+	// Start executing cron Async
+	// For now..
+	scheduler.StartAsync()
+}
+
+// Calculate the delay between each job base on the number of feed
+// Each feed need to be check once an hour
+func getDelay(numberOfFeed int) int {
+	return int(math.Round(float64(60 / numberOfFeed)))
+}
+
+// Will load all feed for one chat id
+// Calculate delay
+// Start the cron again
+func ResetCronForChatId(chatId string) {
+	// Remove the previous one if any
+	scheduler.RemoveByTag(chatId)
+
+	listOfFeed := repository.Feed.FindByChatId(chatId)
 
 	n := 1
 	for _, feedurl := range listOfFeed {
@@ -31,7 +56,7 @@ func Init() {
 
 		_, err := scheduler.Every(1).
 			Hour().
-			Tag(os.Getenv("TELEGRAM_USER_CHAT_ID")).
+			Tag(chatId).
 			StartAt(time.Now().Add(time.Duration(when) * time.Minute)).
 			Do(func() {
 				err := parsedFeed(rul)
@@ -50,16 +75,4 @@ func Init() {
 
 		n += 1
 	}
-
-	fmt.Println("Cron job initied!")
-
-	// Start executing cron Async
-	// For now..
-	scheduler.StartAsync()
-}
-
-// Calculate the delay between each job base on the number of feed
-// Each feed need to be check once an hour
-func getDelay(numberOfFeed int) int {
-	return int(math.Round(float64(60 / numberOfFeed)))
 }

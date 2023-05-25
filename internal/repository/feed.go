@@ -72,3 +72,14 @@ func (r sFeedRepository) SetLastTimeCheck(url string, chatId string) bool {
 
 	return true
 }
+
+// Find all distinct chat id in the db
+func (r sFeedRepository) GetDistinctChatId() []interface{} {
+	result, err := database.FeedCollection.Distinct(context.TODO(), "chatid", bson.D{})
+	if err != nil {
+		fmt.Println(err.Error())
+		return nil
+	}
+
+	return result
+}

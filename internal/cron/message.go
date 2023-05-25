@@ -1,4 +1,4 @@
-package feed
+package cron
 
 import (
 	"math/rand"

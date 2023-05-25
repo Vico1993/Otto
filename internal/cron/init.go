@@ -14,10 +14,10 @@ import (
 )
 
 // TODO: Move this code into something CHAT_ID specific... maybe at /init ?
+var scheduler = gocron.NewScheduler(time.UTC)
 
 // Initialisation of the cronjob at the start of the program
 func Init() {
-	s := gocron.NewScheduler(time.UTC)
 	listOfFeed := repository.Feed.FindByChatId(os.Getenv("TELEGRAM_USER_CHAT_ID"))
 	telegram := service.NewTelegramService()
 
@@ -30,9 +30,9 @@ func Init() {
 		// Start at different time to avoid parsing all feed at the same time
 		when := getDelay(len(listOfFeed)) * n
 
-		_, err := s.Every(1).
+		_, err := scheduler.Every(1).
 			Hour().
-			Tag(url.Host).
+			Tag(os.Getenv("TELEGRAM_USER_CHAT_ID")).
 			StartAt(time.Now().Add(time.Duration(when) * time.Minute)).
 			Do(func() {
 				err := feed.ParsedFeed(rul)
@@ -56,7 +56,7 @@ func Init() {
 
 	// Start executing cron Async
 	// For now..
-	s.StartAsync()
+	scheduler.StartAsync()
 }
 
 func getDelay(numberOfFeed int) int {

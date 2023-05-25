@@ -7,7 +7,6 @@ import (
 	"os"
 	"time"
 
-	"github.com/Vico1993/Otto/internal/feed"
 	"github.com/Vico1993/Otto/internal/repository"
 	"github.com/Vico1993/Otto/internal/service"
 	"github.com/go-co-op/gocron"
@@ -35,7 +34,7 @@ func Init() {
 			Tag(os.Getenv("TELEGRAM_USER_CHAT_ID")).
 			StartAt(time.Now().Add(time.Duration(when) * time.Minute)).
 			Do(func() {
-				err := feed.ParsedFeed(rul)
+				err := parsedFeed(rul)
 				if err != nil {
 					telegram.TelegramPostMessage("Couldn't checked: *" + url.Host + "*-> _" + err.Error() + "_")
 					return
@@ -59,6 +58,8 @@ func Init() {
 	scheduler.StartAsync()
 }
 
+// Calculate the delay between each job base on the number of feed
+// Each feed need to be check once an hour
 func getDelay(numberOfFeed int) int {
 	return int(math.Round(float64(60 / numberOfFeed)))
 }

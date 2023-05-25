@@ -1,4 +1,4 @@
-package feed
+package cron
 
 import (
 	"errors"
@@ -29,7 +29,7 @@ var tags []string = []string{
 }
 
 // Parsed one RSS feed to extract some information
-func ParsedFeed(uri string) error {
+func parsedFeed(uri string) error {
 	url, _ := url.Parse(uri)
 	telegram := service.NewTelegramService()
 

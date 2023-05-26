@@ -126,38 +126,38 @@ jobs:
             - name: Ensure project compiles
               run: make build
 
-    version:
-        name: version comment
-        needs: build
-        runs-on: ubuntu-latest
-        steps:
-            - name: Checkout code
-              uses: actions/checkout@v3
+    # version:
+    #     name: version comment
+    #     needs: build
+    #     runs-on: ubuntu-latest
+    #     steps:
+    #         - name: Checkout code
+    #           uses: actions/checkout@v3
 
-            - name: Bump version and push tag
-              id: tag_version
-              uses: anothrNick/github-tag-action@1.65.0
-              env:
-                  WITH_V: true
-                  DRY_RUN: true
+    #         - name: Bump version and push tag
+    #           id: tag_version
+    #           uses: anothrNick/github-tag-action@1.65.0
+    #           env:
+    #               WITH_V: true
+    #               DRY_RUN: true
 
-            - name: Find if bot already commented
-              uses: peter-evans/find-comment@v2
-              id: find-comment
-              with:
-                  issue-number: ${{ github.event.pull_request.number }}
-                  comment-author: "github-actions[bot]"
-                  body-includes: |
-                      Once PR Merged, the new version will be :
+    #         - name: Find if bot already commented
+    #           uses: peter-evans/find-comment@v2
+    #           id: find-comment
+    #           with:
+    #               issue-number: ${{ github.event.pull_request.number }}
+    #               comment-author: "github-actions[bot]"
+    #               body-includes: |
+    #                   Once PR Merged, the new version will be :
 
-            - name: Create or update comment from bot
-              uses: peter-evans/create-or-update-comment@v3
-              with:
-                  comment-id: ${{ steps.find-comment.outputs.comment-id }}
-                  issue-number: ${{ github.event.pull_request.number }}
-                  body: |
-                      Once PR Merged, the new version will be : ${{ steps.tag_version.outputs.new_tag }}
-                  edit-mode: replace
-                  reactions: |
-                      +1
-                      hooray
+    #         - name: Create or update comment from bot
+    #           uses: peter-evans/create-or-update-comment@v3
+    #           with:
+    #               comment-id: ${{ steps.find-comment.outputs.comment-id }}
+    #               issue-number: ${{ github.event.pull_request.number }}
+    #               body: |
+    #                   Once PR Merged, the new version will be : ${{ steps.tag_version.outputs.new_tag }}
+    #               edit-mode: replace
+    #               reactions: |
+    #                   +1
+    #                   hooray

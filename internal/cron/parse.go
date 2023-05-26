@@ -2,11 +2,11 @@ package cron
 
 import (
 	"errors"
+	"fmt"
 	"net/url"
 	"strings"
 
 	"github.com/Vico1993/Otto/internal/repository"
-	"github.com/Vico1993/Otto/internal/service"
 	"github.com/Vico1993/Otto/internal/utils"
 	"github.com/mmcdole/gofeed"
 )
@@ -31,7 +31,6 @@ var tags []string = []string{
 // Parsed one RSS feed to extract some information
 func parsedFeed(uri string) error {
 	url, _ := url.Parse(uri)
-	telegram := service.NewTelegramService()
 
 	fp := gofeed.NewParser()
 	feed, err := fp.ParseURL(uri)
@@ -48,6 +47,7 @@ func parsedFeed(uri string) error {
 
 		// Looking into the DB to find if it's a new article...
 		article := repository.Article.Find("title", item.Title)
+		fmt.Println("DEBUG - Found", article)
 		if article != nil {
 			continue
 		}

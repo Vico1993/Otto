@@ -12,7 +12,6 @@ import (
 	"github.com/go-co-op/gocron"
 )
 
-// TODO: Move this code into something CHAT_ID specific... maybe at /init ?
 var scheduler = gocron.NewScheduler(time.UTC)
 var telegram = service.NewTelegramService()
 

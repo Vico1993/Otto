@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	"github.com/Vico1993/Otto/internal/repository"
-	"github.com/Vico1993/Otto/internal/service"
 	"github.com/Vico1993/Otto/internal/utils"
 	"github.com/mmcdole/gofeed"
 )
@@ -32,7 +31,6 @@ var tags []string = []string{
 // Parsed one RSS feed to extract some information
 func parsedFeed(uri string) error {
 	url, _ := url.Parse(uri)
-	telegram := service.NewTelegramService()
 
 	fp := gofeed.NewParser()
 	feed, err := fp.ParseURL(uri)

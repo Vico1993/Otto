@@ -2,6 +2,7 @@ package cron
 
 import (
 	"errors"
+	"fmt"
 	"net/url"
 	"strings"
 
@@ -48,6 +49,7 @@ func parsedFeed(uri string) error {
 
 		// Looking into the DB to find if it's a new article...
 		article := repository.Article.Find("title", item.Title)
+		fmt.Println("DEBUG - Found", article)
 		if article != nil {
 			continue
 		}

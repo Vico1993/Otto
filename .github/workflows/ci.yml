@@ -126,13 +126,19 @@ jobs:
             - name: Ensure project compiles
               run: make build
 
-    # version:
-    #     name: version comment
-    #     needs: build
-    #     runs-on: ubuntu-latest
-    #     steps:
-    #         - name: Checkout code
-    #           uses: actions/checkout@v3
+    version:
+        name: version comment
+        needs: build
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v3
+
+            - name: Run script file
+              run: |
+                  chmod +x ./version.sh
+                  ./version.sh
+              shell: bash
 
     #         - name: Bump version and push tag
     #           id: tag_version

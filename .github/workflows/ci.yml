@@ -11,7 +11,6 @@ env:
     TESTCOVERAGE_THRESHOLD: 90
     GO_VERSION: 1.20.2
     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    ACTIONS_STEP_DEBUG: true
 
 jobs:
     deps:
@@ -137,6 +136,9 @@ jobs:
               uses: actions/checkout@v3
 
             - name: Bump version
+              env:
+                  ACTIONS_STEP_DEBUG: true
+                  ACTIONS_RUNNER_DEBUG: true
               uses: Vico1993/bump-version-using-labels@main
               with:
                   file_path: "manifest.json"

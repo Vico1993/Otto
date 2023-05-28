@@ -140,7 +140,7 @@ jobs:
               env:
                   ACTIONS_STEP_DEBUG: true
                   ACTIONS_RUNNER_DEBUG: true
-              uses: apomalyn/bump-version-using-labels@1.5.0
+              uses: apomalyn/bump-version-using-labels@v1.5.0
               with:
                   file_path: "manifest.json"
                   major_label: "#major"

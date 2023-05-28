@@ -127,18 +127,20 @@ jobs:
               run: make build
 
     version:
-        name: version comment
+        name: Update version
         needs: build
         runs-on: ubuntu-latest
         steps:
             - name: Checkout code
               uses: actions/checkout@v3
 
-            - name: Run script file
-              run: |
-                  chmod +x ./version.sh
-                  ./version.sh
-              shell: bash
+            - name: Bump version
+              uses: Vico1993/bump-version-using-labels@1.50.0
+              with:
+                  file_path: "manifest.json"
+                  major_label: "#major"
+                  minor_label: "#minor"
+                  patch_label: "#patch"
 
     #         - name: Bump version and push tag
     #           id: tag_version

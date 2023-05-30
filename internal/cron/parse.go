@@ -11,25 +11,8 @@ import (
 	"github.com/mmcdole/gofeed"
 )
 
-// Tags interested in
-var tags []string = []string{
-	"btc",
-	"bitcoin",
-	"vechain",
-	"apple",
-	"aapl",
-	"finance",
-	"crypto",
-	"crypto.com",
-	"cro",
-	"banks",
-	"binance",
-	"ethereum",
-	"eth",
-}
-
 // Parsed one RSS feed to extract some information
-func parsedFeed(uri string) error {
+func parsedFeed(uri string, tags []string) error {
 	url, _ := url.Parse(uri)
 
 	fp := gofeed.NewParser()
@@ -40,7 +23,7 @@ func parsedFeed(uri string) error {
 
 	for _, item := range feed.Items {
 		// If the category doesn't match with the interest tags
-		match := isCategoriesAndTagsMatch(item.Categories)
+		match := isCategoriesAndTagsMatch(item.Categories, tags)
 		if len(match) == 0 {
 			continue
 		}
@@ -81,7 +64,7 @@ func parsedFeed(uri string) error {
 
 // find if a list of categories is in tags
 // and return the list of tags present in the categories
-func isCategoriesAndTagsMatch(categories []string) []string {
+func isCategoriesAndTagsMatch(categories []string, tags []string) []string {
 	match := []string{}
 	for _, category := range categories {
 		if utils.InSlice(strings.ToLower(category), tags) {

@@ -63,7 +63,7 @@ func startJobForChat(chat *database.Chat) {
 			Tag(chat.ChatId).
 			StartAt(time.Now().Add(time.Duration(when) * time.Minute)).
 			Do(func() {
-				err := parsedFeed(rul)
+				err := parsedFeed(rul, chat.Tags)
 				if err != nil {
 					telegram.TelegramPostMessage("Couldn't checked: *" + url.Host + "*-> _" + err.Error() + "_")
 					return

@@ -1,4 +1,4 @@
-.PHONY: ensure_deps build test lint
+.PHONY: ensure_deps build test lint push_init_chat
 
 default: test lint
 
@@ -24,3 +24,7 @@ lint_fix:
 	@ echo "🪛  Start linting with Fix 🪛"
 	@ golangci-lint run --fix  ./...
 	@ echo "🪛  Fixed your lint 🪛"
+
+push_init_chat:
+	@ echo "Start pushing data in MONGO DB"
+	@ go run ./scripts/init-data.go

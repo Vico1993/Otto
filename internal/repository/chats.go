@@ -115,9 +115,9 @@ func (r sChatRep) PushNewFeed(url string, chat *database.Chat) bool {
 }
 
 // Create a new Chat
-func (r sChatRep) Create(chatid string, userid int64, tags []string, feeds []string) *database.Chat {
+func (r sChatRep) Create(chatid string, userid int64, tags []string, feedsUrl []string) *database.Chat {
 	var listOfFeeds []database.Feed
-	for _, url := range feeds {
+	for _, url := range feedsUrl {
 		listOfFeeds = append(listOfFeeds, *database.NewFeed(url))
 	}
 

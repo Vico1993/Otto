@@ -13,7 +13,7 @@ import (
 
 var ArticleCollection *mongo.Collection = nil
 var BannedUserCollection *mongo.Collection = nil
-var FeedCollection *mongo.Collection = nil
+var ChatCollection *mongo.Collection = nil
 
 func Init() {
 	clientOptions := options.Client().ApplyURI(os.Getenv("MONGO_URI"))
@@ -36,5 +36,5 @@ func Init() {
 
 	ArticleCollection = client.Database(os.Getenv("MONGO_DATABASE")).Collection("article")
 	BannedUserCollection = client.Database(os.Getenv("MONGO_DATABASE")).Collection("banned_user")
-	FeedCollection = client.Database(os.Getenv("MONGO_DATABASE")).Collection("feeds")
+	ChatCollection = client.Database(os.Getenv("MONGO_DATABASE")).Collection("chats")
 }

@@ -29,13 +29,19 @@ func Init() {
 	// Start executing cron Async
 	// For now..
 	scheduler.StartAsync()
+
+	fmt.Println("Cron ready for all chats!!")
 }
 
 // Will setup cron job for that chat
 func SetupCronForChat(chat *database.Chat) {
+	fmt.Println("Start cleaning cron for: " + chat.ChatId)
 	resetCronForChatId(chat)
 
+	fmt.Println("Reinitilisation cron for: " + chat.ChatId)
 	startJobForChat(chat)
+
+	fmt.Println("Cron setup for: " + chat.ChatId)
 }
 
 // Delete all previous tasks in the cron link to that chat id

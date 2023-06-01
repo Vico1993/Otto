@@ -56,9 +56,9 @@ func resetCronForChatId(chat *database.Chat) {
 // Will calculate the delay between each feed, and add then to the scheduler
 func startJobForChat(chat *database.Chat) {
 	n := 1
-	for _, feedurl := range chat.Feeds {
+	for _, feed := range chat.Feeds {
 		// Copy val to be sure it's not overrited with the next iteration
-		rul := feedurl.Url
+		rul := feed.Url
 		url, _ := url.Parse(rul)
 
 		// Start at different time to avoid parsing all feed at the same time
@@ -69,14 +69,15 @@ func startJobForChat(chat *database.Chat) {
 			Tag(chat.ChatId).
 			StartAt(time.Now().Add(time.Duration(when) * time.Minute)).
 			Do(func() {
-				err := parsedFeed(rul, chat.Tags)
+				// Build list of tags from Chat specific and feed specific
+				articleFound, err := fetchFeed(rul, append(feed.Tags, chat.Tags...))
 				if err != nil {
 					telegram.TelegramPostMessage("Couldn't checked: *" + url.Host + "*-> _" + err.Error() + "_")
 					return
 				}
 
-				// Update last time checked
-				repository.Chat.SetLastTimeCheckForUrl(rul, chat)
+				// Update feed after check
+				repository.Chat.UpdateFeedCheckForUrl(rul, articleFound, chat)
 			})
 
 		if err != nil {

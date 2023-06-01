@@ -13,7 +13,7 @@ import (
 type IChatRepository interface {
 	GetAll() []*database.Chat
 	FindByChatId(chatId string) *database.Chat
-	SetLastTimeCheckForUrl(url string, chat *database.Chat) bool
+	UpdateFeedCheckForUrl(url string, articleFound int, chat *database.Chat) bool
 	PushNewFeed(url string, chat *database.Chat) bool
 	Create(chatid string, userid int64, tags []string, feeds []string) *database.Chat
 }
@@ -74,13 +74,14 @@ func (r sChatRep) FindByChatId(chatId string) *database.Chat {
 }
 
 // Update LastTimeChecked with the current time for a key url / chatId
-func (r sChatRep) SetLastTimeCheckForUrl(url string, chat *database.Chat) bool {
+func (r sChatRep) UpdateFeedCheckForUrl(url string, articleFound int, chat *database.Chat) bool {
 	// Find the correct feed
 	// Update the last time parsed
 	// TODO: Maybe find a better way ?
 	for k, feed := range chat.Feeds {
 		if feed.Url == url {
 			feed.LastTimeParsed = time.Now()
+			feed.ArticleFound = articleFound
 
 			chat.Feeds[k] = feed
 		}

@@ -2,7 +2,6 @@ package cron
 
 import (
 	"errors"
-	"fmt"
 	"net/url"
 	"strings"
 
@@ -12,15 +11,16 @@ import (
 )
 
 // Parsed one RSS feed to extract some information
-func parsedFeed(uri string, tags []string) error {
+func fetchFeed(uri string, tags []string) (int, error) {
 	url, _ := url.Parse(uri)
 
 	fp := gofeed.NewParser()
 	feed, err := fp.ParseURL(uri)
 	if err != nil {
-		return errors.New("Couldn't parsed " + url.Host + ": " + err.Error())
+		return 0, errors.New("Couldn't parsed " + url.Host + ": " + err.Error())
 	}
 
+	articleFound := 0
 	for _, item := range feed.Items {
 		// If the category doesn't match with the interest tags
 		match := isCategoriesAndTagsMatch(item.Categories, tags)
@@ -30,7 +30,6 @@ func parsedFeed(uri string, tags []string) error {
 
 		// Looking into the DB to find if it's a new article...
 		article := repository.Article.Find("title", item.Title)
-		fmt.Println("DEBUG - Found", article)
 		if article != nil {
 			continue
 		}
@@ -43,23 +42,22 @@ func parsedFeed(uri string, tags []string) error {
 			item.Categories...,
 		)
 
-		// Exclude medium from notification
-		if url.Host != "medium.com" {
-			telegram.TelegramUpdateTyping(true)
-			telegram.TelegramPostMessage(
-				BuildMessage(
-					item.Title,
-					feed.Title,
-					item.Author.Name,
-					match,
-					item.Link,
-				),
-			)
-			telegram.TelegramUpdateTyping(false)
-		}
+		articleFound += 1
+
+		telegram.TelegramUpdateTyping(true)
+		telegram.TelegramPostMessage(
+			BuildMessage(
+				item.Title,
+				feed.Title,
+				item.Author.Name,
+				match,
+				item.Link,
+			),
+		)
+		telegram.TelegramUpdateTyping(false)
 	}
 
-	return nil
+	return articleFound, nil
 }
 
 // find if a list of categories is in tags

@@ -10,10 +10,12 @@ import (
 	"github.com/Vico1993/Otto/internal/repository"
 	"github.com/Vico1993/Otto/internal/service"
 	"github.com/go-co-op/gocron"
+	"github.com/mmcdole/gofeed"
 )
 
 var scheduler = gocron.NewScheduler(time.UTC)
 var telegram = service.NewTelegramService()
+var gofeedParser = gofeed.NewParser()
 
 // Initialisation of the cronjob at the start of the program
 func Init() {
@@ -69,15 +71,10 @@ func startJobForChat(chat *database.Chat) {
 			Tag(chat.ChatId).
 			StartAt(time.Now().Add(time.Duration(when) * time.Minute)).
 			Do(func() {
-				// Build list of tags from Chat specific and feed specific
-				articleFound, err := fetchFeed(rul, append(feed.Tags, chat.Tags...))
+				err := job(rul, feed, chat)
 				if err != nil {
 					telegram.TelegramPostMessage("Couldn't checked: *" + url.Host + "*-> _" + err.Error() + "_")
-					return
 				}
-
-				// Update feed after check
-				repository.Chat.UpdateFeedCheckForUrl(rul, articleFound, chat)
 			})
 
 		if err != nil {
@@ -86,6 +83,42 @@ func startJobForChat(chat *database.Chat) {
 
 		n += 1
 	}
+}
+
+// Job to execute
+func job(rul string, feed database.Feed, chat *database.Chat) error {
+	parser := &parser{
+		url:  rul,
+		tags: append(feed.Tags, chat.Tags...),
+	}
+
+	result, err := parser.execute(repository.Article)
+	if err != nil {
+		return err
+	}
+
+	if len(result.articles) == 0 {
+		return nil
+	}
+
+	for _, article := range result.articles {
+		telegram.TelegramUpdateTyping(true)
+		telegram.TelegramPostMessage(
+			BuildMessage(
+				article.Title,
+				result.feedTitle,
+				article.Author,
+				article.MatchingTags,
+				article.Link,
+			),
+		)
+		telegram.TelegramUpdateTyping(false)
+	}
+
+	// Update feed after check
+	repository.Chat.UpdateFeedCheckForUrl(rul, len(result.articles), chat)
+
+	return nil
 }
 
 // Calculate the delay between each job base on the number of feed

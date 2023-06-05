@@ -5,12 +5,14 @@ import (
 )
 
 type Article struct {
-	Title     string
-	Published string
-	Parsed    time.Time
-	Link      string
-	Source    string
-	Tags      []string
+	Title        string
+	Published    string
+	Parsed       time.Time
+	Link         string
+	Source       string
+	Author       string
+	Tags         []string
+	MatchingTags []string
 }
 
 func NewArticle(
@@ -18,14 +20,18 @@ func NewArticle(
 	published string,
 	link string,
 	source string,
+	author string,
+	match []string,
 	tags ...string,
 ) *Article {
 	return &Article{
-		Title:     title,
-		Published: published,
-		Parsed:    time.Now(),
-		Link:      link,
-		Source:    source,
-		Tags:      tags,
+		Title:        title,
+		Published:    published,
+		Parsed:       time.Now(),
+		Link:         link,
+		Source:       source,
+		Author:       author,
+		MatchingTags: match,
+		Tags:         tags,
 	}
 }

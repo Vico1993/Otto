@@ -9,7 +9,7 @@ import (
 )
 
 type IArticleRepository interface {
-	Create(title string, published string, link string, source string, tags ...string) *database.Article
+	Create(title string, published string, link string, source string, author string, match []string, tags ...string) *database.Article
 	Find(key string, val string) *database.Article
 }
 
@@ -21,8 +21,8 @@ func newArticleRepository() IArticleRepository {
 }
 
 // Create a new Article in the DB
-func (r sArticleRep) Create(title string, published string, link string, source string, tags ...string) *database.Article {
-	article := database.NewArticle(title, published, link, source, tags...)
+func (r sArticleRep) Create(title string, published string, link string, source string, author string, match []string, tags ...string) *database.Article {
+	article := database.NewArticle(title, published, link, source, author, match, tags...)
 
 	_, err := database.ArticleCollection.InsertOne(context.TODO(), article)
 

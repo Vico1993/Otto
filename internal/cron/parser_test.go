@@ -1,6 +1,7 @@
 package cron
 
 import (
+	"errors"
 	"testing"
 
 	"github.com/Vico1993/Otto/internal/database"
@@ -208,4 +209,31 @@ func TestExecuteArticleNoCategoryMatch(t *testing.T) {
 
 	assert.Nil(t, err, "The error object should be nil")
 	assert.Len(t, result.articles, 0, "Since no category match, should return 0")
+}
+
+func TestExecuteParsingFailed(t *testing.T) {
+	p := &parser{
+		url:  "https://test.com/feed",
+		tags: []string{"tag1", "tag2"},
+	}
+
+	oldParseUrl := parseUrl
+	defer func() { parseUrl = oldParseUrl }()
+
+	parseUrl = func(url string) (*gofeed.Feed, error) {
+		return nil, errors.New("Failling...")
+	}
+
+	// Mock Article Repository
+	articleRepositoryMock := new(repository.MocksArticleRep)
+
+	result, err := p.execute(articleRepositoryMock)
+
+	articleRepositoryMock.AssertNotCalled(t, "Find")
+	articleRepositoryMock.AssertNotCalled(t, "Create")
+
+	assert.Nil(t, result, "Result should be nil if gofeed fail")
+	if assert.Error(t, err) {
+		assert.Equal(t, errors.New("Couldn't parsed test.com: Failling..."), err, "Error message doesn't match")
+	}
 }

@@ -6,7 +6,7 @@ import (
 )
 
 type MocksChatRep struct {
-	*mock.Mock
+	mock.Mock
 }
 
 func (m *MocksChatRep) GetAll() []*database.Chat {
@@ -15,21 +15,21 @@ func (m *MocksChatRep) GetAll() []*database.Chat {
 }
 
 func (m *MocksChatRep) FindByChatId(chatId string) *database.Chat {
-	m.Called(chatId)
-	return database.NewChat("123", 123, []database.Feed{})
+	args := m.Called(chatId)
+	return args.Get(0).(*database.Chat)
 }
 
 func (m *MocksChatRep) UpdateFeedCheckForUrl(url string, articleFound int, chat *database.Chat) bool {
-	m.Called(url, articleFound, chat)
-	return true
+	args := m.Called(url, articleFound, chat)
+	return args.Bool(0)
 }
 
 func (m *MocksChatRep) PushNewFeed(url string, chat *database.Chat) bool {
-	m.Called(url, chat)
-	return true
+	args := m.Called(url, chat)
+	return args.Bool(0)
 }
 
 func (m *MocksChatRep) Create(chatid string, userid int64, tags []string, feeds []string) *database.Chat {
-	m.Called(chatid, userid, tags, feeds)
-	return database.NewChat("123", 123, []database.Feed{})
+	args := m.Called(chatid, userid, tags, feeds)
+	return args.Get(0).(*database.Chat)
 }

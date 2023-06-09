@@ -1,11 +1,16 @@
 package cron
 
 import (
+	"errors"
 	"fmt"
 	"testing"
 
 	"github.com/Vico1993/Otto/internal/database"
+	"github.com/Vico1993/Otto/internal/repository"
+	"github.com/Vico1993/Otto/internal/service"
+	"github.com/mmcdole/gofeed"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 )
 
 func TestDelayWith1Element(t *testing.T) {
@@ -77,4 +82,159 @@ func TestSetupCronForChat(t *testing.T) {
 	assert.Equal(t, job.Tags()[0], chat.ChatId, "The first and only tag should be equal to our chatid")
 
 	_ = scheduler.RemoveByTag(chat.ChatId)
+}
+
+func TestJobExecuteReturnError(t *testing.T) {
+	feed := database.NewFeed("https://test.com/feed")
+
+	oldParseUrl := parseUrl
+	defer func() { parseUrl = oldParseUrl }()
+
+	parseUrl = func(url string) (*gofeed.Feed, error) {
+		return nil, errors.New("Failling...")
+	}
+
+	err := job(*feed, database.NewChat("124", 123, []database.Feed{*feed}, "tag1", "tag2"))
+
+	fmt.Println(err)
+
+	if assert.Error(t, err) {
+		assert.Equal(t, errors.New("Couldn't parsed test.com: Failling...").Error(), err.Error(), "Error message should be the same")
+	}
+}
+
+func TestJobExecuteNoArticlesFound(t *testing.T) {
+	feed := database.NewFeed("https://test.com/feed")
+
+	item := &gofeed.Item{
+		Title:     "Super Title for an Article",
+		Published: "2023-06-04",
+		Link:      "https://test.com/article-1",
+		Categories: []string{
+			"tag5", "tag8",
+		},
+		Authors: []*gofeed.Person{
+			{
+				Name: "Victor",
+			},
+		},
+	}
+
+	f := &gofeed.Feed{
+		Title: "Super Test",
+		Items: []*gofeed.Item{
+			item,
+		},
+	}
+
+	oldParseUrl := parseUrl
+	defer func() { parseUrl = oldParseUrl }()
+
+	parseUrl = func(url string) (*gofeed.Feed, error) {
+		return f, nil
+	}
+
+	articleRepositoryMock := new(repository.MocksArticleRep)
+	repository.Article = articleRepositoryMock
+
+	chatRepositoryMock := new(repository.MocksChatRep)
+	repository.Chat = chatRepositoryMock
+
+	telegramServiceMock := new(service.MocksTelegramService)
+	telegram = telegramServiceMock
+
+	err := job(*feed, database.NewChat("124", 123, []database.Feed{*feed}, "tag1", "tag2"))
+
+	assert.Nil(t, err)
+
+	articleRepositoryMock.AssertNotCalled(t, "Find")
+	articleRepositoryMock.AssertNotCalled(t, "Create")
+
+	telegramServiceMock.AssertNotCalled(t, "TelegramPostMessage")
+	telegramServiceMock.AssertNotCalled(t, "TelegramUpdateTyping")
+}
+
+func TestJobExecuteArticleFound(t *testing.T) {
+	feed := database.NewFeed("https://test.com/feed")
+
+	item := &gofeed.Item{
+		Title:     "Super Title for an Article",
+		Published: "2023-06-04",
+		Link:      "https://test.com/article-1",
+		Categories: []string{
+			"tag5", "tag8",
+		},
+		Authors: []*gofeed.Person{
+			{
+				Name: "Victor",
+			},
+		},
+	}
+
+	f := &gofeed.Feed{
+		Title: "Super Test",
+		Items: []*gofeed.Item{
+			item,
+		},
+	}
+
+	oldParseUrl := parseUrl
+	defer func() { parseUrl = oldParseUrl }()
+
+	parseUrl = func(url string) (*gofeed.Feed, error) {
+		return f, nil
+	}
+
+	articleRepositoryMock := new(repository.MocksArticleRep)
+	repository.Article = articleRepositoryMock
+
+	// Article repository return nil on Find
+	articleRepositoryMock.On("Find", "title", item.Title).Return(nil)
+
+	articleExpected := database.NewArticle(
+		item.Title,
+		item.Published,
+		item.Link,
+		f.Title,
+		item.Authors[0].Name,
+		[]string{"tag5"},
+		item.Categories...,
+	)
+
+	// Article repository return an article on Create
+	articleRepositoryMock.On("Create",
+		item.Title,
+		item.Published,
+		item.Link,
+		f.Title,
+		item.Authors[0].Name,
+		[]string{"tag5"},
+		item.Categories,
+	).Return(articleExpected)
+
+	chatRepositoryMock := new(repository.MocksChatRep)
+	repository.Chat = chatRepositoryMock
+
+	telegramServiceMock := new(service.MocksTelegramService)
+	telegram = telegramServiceMock
+
+	telegramServiceMock.On("TelegramUpdateTyping", true).Return()
+	telegramServiceMock.On("TelegramUpdateTyping", false).Return()
+	telegramServiceMock.On("TelegramPostMessage", mock.Anything).Return()
+
+	chat := database.NewChat("124", 123, []database.Feed{*feed}, "tag1", "tag5")
+
+	chatRepositoryMock.On("UpdateFeedCheckForUrl", feed.Url, 1, chat).Return(true)
+
+	err := job(*feed, chat)
+
+	assert.Nil(t, err)
+
+	articleRepositoryMock.AssertCalled(t, "Find", "title", item.Title)
+	articleRepositoryMock.AssertCalled(t, "Create", item.Title, item.Published, item.Link, f.Title, item.Authors[0].Name, []string{"tag5"}, item.Categories)
+
+	telegramServiceMock.AssertCalled(t, "TelegramPostMessage")
+	telegramServiceMock.AssertCalled(t, "TelegramUpdateTyping")
+
+	chatRepositoryMock.AssertCalled(t, "UpdateFeedCheckForUrl", feed.Url, 1, chat)
 }

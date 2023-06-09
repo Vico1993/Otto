@@ -71,7 +71,7 @@ func startJobForChat(chat *database.Chat) {
 			Tag(chat.ChatId).
 			StartAt(time.Now().Add(time.Duration(when) * time.Minute)).
 			Do(func() {
-				err := job(rul, feed, chat)
+				err := job(feed, chat)
 				if err != nil {
 					telegram.TelegramPostMessage("Couldn't checked: *" + url.Host + "*-> _" + err.Error() + "_")
 				}
@@ -86,9 +86,9 @@ func startJobForChat(chat *database.Chat) {
 }
 
 // Job to execute
-func job(rul string, feed database.Feed, chat *database.Chat) error {
+func job(feed database.Feed, chat *database.Chat) error {
 	parser := &parser{
-		url:  rul,
+		url:  feed.Url,
 		tags: append(feed.Tags, chat.Tags...),
 	}
 
@@ -116,7 +116,7 @@ func job(rul string, feed database.Feed, chat *database.Chat) error {
 	}
 
 	// Update feed after check
-	repository.Chat.UpdateFeedCheckForUrl(rul, len(result.articles), chat)
+	repository.Chat.UpdateFeedCheckForUrl(feed.Url, len(result.articles), chat)
 
 	return nil
 }

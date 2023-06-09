@@ -96,6 +96,6 @@ func TestNewTelegramService(t *testing.T) {
 
 	service := NewTelegramService()
 
-	assert.Equal(t, service.chatId, "TOTO", "ChatId who is set by the construct should return TOTO")
-	assert.Equal(t, service.baseUrl, "https://api.telegram.org/botFOO", "Url is should include FOO at the end")
+	assert.Equal(t, service.GetChatId(), "TOTO", "ChatId who is set by the construct should return TOTO")
+	assert.Equal(t, service.GetBaseUrl(), "https://api.telegram.org/botFOO", "Url is should include FOO at the end")
 }

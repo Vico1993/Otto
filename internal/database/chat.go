@@ -5,6 +5,7 @@ import "time"
 type Feed struct {
 	Url            string
 	Tags           []string
+	ArticleFound   int
 	CreatedAt      time.Time
 	LastTimeParsed time.Time
 }
@@ -12,6 +13,7 @@ type Feed struct {
 func NewFeed(url string) *Feed {
 	feed := Feed{}
 	feed.Url = url
+	feed.ArticleFound = 0
 	feed.CreatedAt = time.Now()
 
 	return &feed

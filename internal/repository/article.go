@@ -8,15 +8,21 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 )
 
-// TODO: Find a way to correctly initiate database collection
-var Article sArticleRepository
+type IArticleRepository interface {
+	Create(title string, published string, link string, source string, author string, match []string, tags ...string) *database.Article
+	Find(key string, val string) *database.Article
+}
 
-type sArticleRepository struct {
+type sArticleRep struct {
+}
+
+func newArticleRepository() IArticleRepository {
+	return &sArticleRep{}
 }
 
 // Create a new Article in the DB
-func (r sArticleRepository) Create(title string, published string, link string, source string, tags ...string) *database.Article {
-	article := database.NewArticle(title, published, link, source, tags...)
+func (r sArticleRep) Create(title string, published string, link string, source string, author string, match []string, tags ...string) *database.Article {
+	article := database.NewArticle(title, published, link, source, author, match, tags...)
 
 	_, err := database.ArticleCollection.InsertOne(context.TODO(), article)
 
@@ -28,7 +34,7 @@ func (r sArticleRepository) Create(title string, published string, link string, 
 }
 
 // Find an Artcile by a key
-func (r sArticleRepository) Find(key string, val string) *database.Article {
+func (r sArticleRep) Find(key string, val string) *database.Article {
 	var article *database.Article
 
 	fmt.Println("Searching for Article with key: ", key, " value: ", val)

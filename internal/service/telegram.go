@@ -7,12 +7,20 @@ import (
 	"strings"
 )
 
+type ITelegramService interface {
+	TelegramPostMessage(text string)
+	TelegramUpdateTyping(val bool)
+	GetChatId() string
+	GetBaseUrl() string
+}
+
 type TelegramService struct {
 	baseUrl string
 	chatId  string
 }
 
-func NewTelegramService() *TelegramService {
+// TODO: Update this service to have dynamic TELEGRAM_USER_CHAT_ID
+func NewTelegramService() ITelegramService {
 	return &TelegramService{
 		// Replace token in the URL
 		baseUrl: "https://api.telegram.org/bot" + os.Getenv("TELEGRAM_BOT_TOKEN"),
@@ -54,6 +62,13 @@ func (s *TelegramService) TelegramUpdateTyping(val bool) {
 	if err != nil {
 		panic(err)
 	}
+}
+
+func (s *TelegramService) GetChatId() string {
+	return s.chatId
+}
+func (s *TelegramService) GetBaseUrl() string {
+	return s.baseUrl
 }
 
 func buildData(params map[string]string) url.Values {

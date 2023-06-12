@@ -65,15 +65,20 @@ jobs:
               run: |
                   go test -race -covermode atomic -coverprofile=profile.cov ./...
 
-            - name: Install goveralls
-              run: go install github.com/mattn/goveralls@latest
-
-            - name: Send coverage
-              uses: shogo82148/actions-goveralls@v1
+            - name: Check lcov
+              uses: romeovs/lcov-reporter-action@v0.2.16
               with:
-                  path-to-profile: profile.cov
-                  flag-name: Go-${{ matrix.os }}
-                  parallel: true
+                  lcov-file: profile.cov
+
+            # - name: Install goveralls
+            #   run: go install github.com/mattn/goveralls@latest
+
+            # - name: Send coverage
+            #   uses: shogo82148/actions-goveralls@v1
+            #   with:
+            #       path-to-profile: profile.cov
+            #       flag-name: Go-${{ matrix.os }}
+            #       parallel: true
 
     # notifies that all test jobs are finished.
     finish:

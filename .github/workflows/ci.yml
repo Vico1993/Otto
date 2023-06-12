@@ -77,6 +77,12 @@ jobs:
               with:
                   go-version: ${{ env.GO_VERSION }}
 
+            - name: Checkout code
+              uses: actions/checkout@v3
+              with:
+                  persist-credentials: false
+                  fetch-depth: 0
+
             - name: Install gcov to lcov
               run: |
                   go install github.com/jandelgado/gcov2lcov@latest

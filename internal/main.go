@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+
 	"github.com/subosito/gotenv"
 
 	"github.com/Vico1993/Otto/internal/bot"
@@ -21,6 +23,8 @@ func main() {
 
 	// Initialisation of the cron
 	cron.Init()
+
+	fmt.Println("Test")
 
 	// bot
 	bot.Init()

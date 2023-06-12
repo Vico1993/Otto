@@ -45,9 +45,6 @@ jobs:
             fail-fast: false
             matrix:
                 os: [ubuntu-latest, macos-latest]
-        env:
-            COVERALLS_PARALLEL: true
-            COVERALLS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
         steps:
             - name: Set up Go
@@ -73,6 +70,7 @@ jobs:
               uses: romeovs/lcov-reporter-action@v0.2.16
               with:
                   lcov-file: coverage.lcov
+                  github-token: ${{ env.GITHUB_TOKEN }}
 
             # - name: Install goveralls
             #   run: go install github.com/mattn/goveralls@latest

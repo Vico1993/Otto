@@ -61,14 +61,18 @@ jobs:
                   persist-credentials: false
                   fetch-depth: 0
 
+            - name: Install gcov to lcov
+              run: |
+                  go install github.com/jandelgado/gcov2lcov@latest
+
             - name: Test
               run: |
-                  go test -race -covermode atomic -coverprofile=profile.cov ./...
+                  go test -race -covermode atomic -coverprofile=profile.cov ./... && gcov2lcov -infile=profile.cov -outfile=coverage.lcov
 
             - name: Check lcov
               uses: romeovs/lcov-reporter-action@v0.2.16
               with:
-                  lcov-file: profile.cov
+                  lcov-file: coverage.lcov
 
             # - name: Install goveralls
             #   run: go install github.com/mattn/goveralls@latest

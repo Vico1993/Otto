@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -79,4 +80,16 @@ func TestServerReturn500error(t *testing.T) {
 	_, err := s.Ask(message)
 
 	assert.NotNil(t, err, "Error shoud be nil")
+}
+
+func TestNewService(t *testing.T) {
+	os.Setenv("OPENAI_TOKEN", "FOO")
+
+	s := &ChatGPTService{
+		baseUrl: "https://api.openai.com/v1",
+		token:   "FOO",
+		client:  &http.Client{},
+	}
+
+	assert.Equal(t, s, NewChatGPTService(), "Both service should be equal")
 }

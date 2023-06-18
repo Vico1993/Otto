@@ -17,7 +17,6 @@ type TelegramService struct {
 	baseUrl string
 }
 
-// TODO: Update this service to have dynamic TELEGRAM_USER_CHAT_ID
 func NewTelegramService() ITelegramService {
 	return &TelegramService{
 		// Replace token in the URL

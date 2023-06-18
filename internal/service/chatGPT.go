@@ -68,7 +68,6 @@ func (s *ChatGPTService) Ask(query string) (*GptAskResponse, error) {
 		return nil, errors.New("Couldn't parse body response: " + err.Error())
 	}
 
-	fmt.Println(resp.StatusCode)
 	if resp.StatusCode != 200 {
 		fmt.Println(string(bodyBytes))
 		return nil, errors.New("Open API returned an error : " + string(bodyBytes))

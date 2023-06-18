@@ -1,7 +1,9 @@
 package service
 
 import (
+	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -9,17 +11,19 @@ import (
 )
 
 type IChatGPTService interface {
-	Ask(query string) *GptAskResponse
+	Ask(query string) (*GptAskResponse, error)
 }
 
 type ChatGPTService struct {
 	baseUrl string
 	token   string
+	client  *http.Client
 }
 
 func NewChatGPTService() IChatGPTService {
 	return &ChatGPTService{
-		baseUrl: "https://api.openai.com/v1/",
+		client:  &http.Client{},
+		baseUrl: "https://api.openai.com/v1",
 		token:   os.Getenv("OPENAI_TOKEN"),
 	}
 }
@@ -29,7 +33,7 @@ func (s *ChatGPTService) buildRequest(body []byte, path string) *http.Request {
 	req, err := http.NewRequest(
 		"POST",
 		s.baseUrl+path,
-		nil,
+		bytes.NewBuffer(body),
 	)
 
 	if err != nil {
@@ -44,43 +48,47 @@ func (s *ChatGPTService) buildRequest(body []byte, path string) *http.Request {
 }
 
 // Ask question to ChatGPT
-func (s *ChatGPTService) Ask(query string) *GptAskResponse {
-	body := s.buildReqBody(query)
-	if body == nil {
-		return nil
+func (s *ChatGPTService) Ask(query string) (*GptAskResponse, error) {
+	body, err := s.buildReqBody(query)
+	if err != nil {
+		return nil, errors.New("Couldn't build body request: " + err.Error())
 	}
 
-	req := s.buildRequest(body, "chat/completions")
+	req := s.buildRequest(body, "/chat/completions")
 
-	// Create a new HTTP client
-	client := &http.Client{}
-
-	resp, err := client.Do(req)
+	resp, err := s.client.Do(req)
 	if err != nil {
-		fmt.Println("Request failed")
-		return nil
+		return nil, errors.New("Request failed: " + err.Error())
 	}
 	defer resp.Body.Close()
 
 	// Read the response body into a byte slice
 	bodyBytes, err := io.ReadAll(resp.Body)
 	if err != nil {
-		panic(err)
+		return nil, errors.New("Couldn't parse body response: " + err.Error())
+	}
+
+	fmt.Println(resp.StatusCode)
+	if resp.StatusCode != 200 {
+		fmt.Println(string(bodyBytes))
+		return nil, errors.New("Open API returned an error : " + string(bodyBytes))
 	}
 
 	var response GptAskResponse
 	err = json.Unmarshal(bodyBytes, &response)
 	if err != nil {
-		fmt.Println("Response parse error", err.Error())
-
-		return nil
+		return nil, errors.New("Response parse error: " + err.Error())
 	}
 
-	return &response
+	return &response, nil
+}
+
+func String(bodyBytes []byte) {
+	panic("unimplemented")
 }
 
 // Marshal the user object into a JSON-encoded byte slice
-func (s *ChatGPTService) buildReqBody(query string) []byte {
+func (s *ChatGPTService) buildReqBody(query string) ([]byte, error) {
 	request := newGPTRequest([]GptMessage{
 		{
 			Role:    "user",
@@ -89,13 +97,11 @@ func (s *ChatGPTService) buildReqBody(query string) []byte {
 	})
 
 	body, err := json.Marshal(request)
-
 	if err != nil {
-		fmt.Println("Request parse error")
-		return nil
+		return nil, errors.New("Request parse error " + err.Error())
 	}
 
-	return body
+	return body, nil
 }
 
 // Message sent by ChatGpt

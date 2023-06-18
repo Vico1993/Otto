@@ -220,9 +220,9 @@ func TestJobExecuteArticleFound(t *testing.T) {
 	telegramServiceMock := new(service.MocksTelegramService)
 	telegram = telegramServiceMock
 
-	telegramServiceMock.On("TelegramUpdateTyping", true).Return()
-	telegramServiceMock.On("TelegramUpdateTyping", false).Return()
-	telegramServiceMock.On("TelegramPostMessage", mock.Anything).Return()
+	telegramServiceMock.On("TelegramUpdateTyping", chat.ChatId, true).Return()
+	telegramServiceMock.On("TelegramUpdateTyping", chat.ChatId, false).Return()
+	telegramServiceMock.On("TelegramPostMessage", chat.ChatId, mock.Anything).Return()
 
 	chatRepositoryMock.On("UpdateFeedCheckForUrl", feed.Url, 1, chat.ChatId).Return(true)
 
@@ -233,8 +233,8 @@ func TestJobExecuteArticleFound(t *testing.T) {
 	articleRepositoryMock.AssertCalled(t, "Find", "title", item.Title)
 	articleRepositoryMock.AssertCalled(t, "Create", item.Title, item.Published, item.Link, f.Title, item.Authors[0].Name, []string{"tag5"}, item.Categories)
 
-	telegramServiceMock.AssertCalled(t, "TelegramPostMessage", mock.Anything)
-	telegramServiceMock.AssertCalled(t, "TelegramUpdateTyping", mock.Anything)
+	telegramServiceMock.AssertCalled(t, "TelegramPostMessage", chat.ChatId, mock.Anything)
+	telegramServiceMock.AssertCalled(t, "TelegramUpdateTyping", chat.ChatId, mock.Anything)
 
 	chatRepositoryMock.AssertCalled(t, "UpdateFeedCheckForUrl", feed.Url, 1, chat.ChatId)
 }

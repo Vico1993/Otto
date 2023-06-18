@@ -27,11 +27,10 @@ func TestTelegramPostMessage(t *testing.T) {
 	defer server.Close()
 
 	s := TelegramService{
-		chatId:  "123",
 		baseUrl: server.URL,
 	}
 
-	s.TelegramPostMessage("Test message")
+	s.TelegramPostMessage("123", "Test message")
 }
 
 func TestTelegramSetTypingToTrue(t *testing.T) {
@@ -51,11 +50,10 @@ func TestTelegramSetTypingToTrue(t *testing.T) {
 	defer server.Close()
 
 	s := TelegramService{
-		chatId:  "123",
 		baseUrl: server.URL,
 	}
 
-	s.TelegramUpdateTyping(true)
+	s.TelegramUpdateTyping("123", true)
 }
 
 func TestTelegramSetTypingToFalse(t *testing.T) {
@@ -74,11 +72,10 @@ func TestTelegramSetTypingToFalse(t *testing.T) {
 	defer server.Close()
 
 	s := TelegramService{
-		chatId:  "123",
 		baseUrl: server.URL,
 	}
 
-	s.TelegramUpdateTyping(false)
+	s.TelegramUpdateTyping("123", false)
 }
 
 func TestBuildData(t *testing.T) {
@@ -91,11 +88,9 @@ func TestBuildData(t *testing.T) {
 }
 
 func TestNewTelegramService(t *testing.T) {
-	os.Setenv("TELEGRAM_USER_CHAT_ID", "TOTO")
 	os.Setenv("TELEGRAM_BOT_TOKEN", "FOO")
 
 	service := NewTelegramService()
 
-	assert.Equal(t, service.GetChatId(), "TOTO", "ChatId who is set by the construct should return TOTO")
 	assert.Equal(t, service.GetBaseUrl(), "https://api.telegram.org/botFOO", "Url is should include FOO at the end")
 }

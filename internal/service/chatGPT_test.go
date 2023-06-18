@@ -47,7 +47,7 @@ func TestAskValidQuery(t *testing.T) {
 
 		// Respond with a success status code
 		w.WriteHeader(http.StatusOK)
-		w.Write(byteResponse)
+		_, _ = w.Write(byteResponse)
 	}))
 	defer server.Close()
 

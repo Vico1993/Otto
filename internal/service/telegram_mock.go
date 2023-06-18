@@ -6,17 +6,12 @@ type MocksTelegramService struct {
 	mock.Mock
 }
 
-func (m *MocksTelegramService) TelegramPostMessage(text string) {
-	m.Called(text)
+func (m *MocksTelegramService) TelegramPostMessage(chatId string, text string) {
+	m.Called(chatId, text)
 }
 
-func (m *MocksTelegramService) TelegramUpdateTyping(val bool) {
-	m.Called(val)
-}
-
-func (m *MocksTelegramService) GetChatId() string {
-	args := m.Called()
-	return args.String(0)
+func (m *MocksTelegramService) TelegramUpdateTyping(chatId string, val bool) {
+	m.Called(chatId, val)
 }
 
 func (m *MocksTelegramService) GetBaseUrl() string {

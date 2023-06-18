@@ -73,7 +73,7 @@ func startJobForChat(chat *database.Chat) {
 			Do(func() {
 				err := job(feed, chat)
 				if err != nil {
-					telegram.TelegramPostMessage("Couldn't checked: *" + url.Host + "*-> _" + err.Error() + "_")
+					telegram.TelegramPostMessage(chat.ChatId, "Couldn't checked: *"+url.Host+"*-> _"+err.Error()+"_")
 				}
 			})
 
@@ -102,8 +102,9 @@ func job(feed database.Feed, chat *database.Chat) error {
 	}
 
 	for _, article := range result.articles {
-		telegram.TelegramUpdateTyping(true)
+		telegram.TelegramUpdateTyping(chat.ChatId, true)
 		telegram.TelegramPostMessage(
+			chat.ChatId,
 			BuildMessage(
 				article.Title,
 				result.feedTitle,
@@ -112,11 +113,11 @@ func job(feed database.Feed, chat *database.Chat) error {
 				article.Link,
 			),
 		)
-		telegram.TelegramUpdateTyping(false)
+		telegram.TelegramUpdateTyping(chat.ChatId, false)
 	}
 
 	// Update feed after check
-	repository.Chat.UpdateFeedCheckForUrl(feed.Url, len(result.articles), chat)
+	repository.Chat.UpdateFeedCheckForUrl(feed.Url, len(result.articles), chat.ChatId)
 
 	return nil
 }

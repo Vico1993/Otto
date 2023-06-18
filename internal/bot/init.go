@@ -14,7 +14,10 @@ func Init() {
 		log.Panic(err)
 	}
 
-	service.NewTelegramService().TelegramPostMessage(`*Upgrade complete*! Ready to be even smarter and funnier than before. 🤖 🚀 ✨`)
+	service.NewTelegramService().TelegramPostMessage(
+		os.Getenv("TELEGRAM_USER_CHAT_ID"),
+		`*Upgrade complete*! Ready to be even smarter and funnier than before. 🤖 🚀 ✨`,
+	)
 
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = 30

@@ -116,7 +116,7 @@ func job(feed database.Feed, chat *database.Chat) error {
 	}
 
 	// Update feed after check
-	repository.Chat.UpdateFeedCheckForUrl(feed.Url, len(result.articles), chat)
+	repository.Chat.UpdateFeedCheckForUrl(feed.Url, len(result.articles), chat.ChatId)
 
 	return nil
 }

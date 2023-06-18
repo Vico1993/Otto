@@ -19,13 +19,13 @@ func (m *MocksChatRep) FindByChatId(chatId string) *database.Chat {
 	return args.Get(0).(*database.Chat)
 }
 
-func (m *MocksChatRep) UpdateFeedCheckForUrl(url string, articleFound int, chat *database.Chat) bool {
-	args := m.Called(url, articleFound, chat)
+func (m *MocksChatRep) UpdateFeedCheckForUrl(url string, articleFound int, chatId string) bool {
+	args := m.Called(url, articleFound, chatId)
 	return args.Bool(0)
 }
 
-func (m *MocksChatRep) PushNewFeed(url string, chat *database.Chat) bool {
-	args := m.Called(url, chat)
+func (m *MocksChatRep) PushNewFeed(url string, chatId string) bool {
+	args := m.Called(url, chatId)
 	return args.Bool(0)
 }
 

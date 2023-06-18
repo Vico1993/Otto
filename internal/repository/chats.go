@@ -8,13 +8,14 @@ import (
 
 	"github.com/Vico1993/Otto/internal/database"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type IChatRepository interface {
 	GetAll() []*database.Chat
 	FindByChatId(chatId string) *database.Chat
-	UpdateFeedCheckForUrl(url string, articleFound int, chat *database.Chat) bool
-	PushNewFeed(url string, chat *database.Chat) bool
+	UpdateFeedCheckForUrl(url string, articleFound int, chatId string) bool
+	PushNewFeed(url string, chatId string) bool
 	Create(chatid string, userid int64, tags []string, feeds []string) *database.Chat
 }
 
@@ -74,21 +75,32 @@ func (r sChatRep) FindByChatId(chatId string) *database.Chat {
 }
 
 // Update LastTimeChecked with the current time for a key url / chatId
-func (r sChatRep) UpdateFeedCheckForUrl(url string, articleFound int, chat *database.Chat) bool {
-	// Find the correct feed
-	// Update the last time parsed
-	// TODO: Maybe find a better way ?
-	for k, feed := range chat.Feeds {
-		if feed.Url == url {
-			feed.LastTimeParsed = time.Now()
-			feed.ArticleFound = articleFound
-
-			chat.Feeds[k] = feed
-		}
-	}
-
-	// update the db
-	err := r.save(chat)
+func (r sChatRep) UpdateFeedCheckForUrl(
+	url string,
+	articleFound int,
+	chatId string,
+) bool {
+	_, err := database.ChatCollection.UpdateOne(
+		context.TODO(),
+		bson.D{{
+			Key:   "chatid",
+			Value: chatId,
+		}},
+		bson.D{{Key: "$set", Value: bson.M{
+			"feeds.$[e].lasttimeparsed": time.Now(),
+			"feeds.$[e].articleFound":   articleFound,
+		}}},
+		options.Update().SetArrayFilters(
+			options.ArrayFilters{
+				Filters: []interface{}{
+					bson.D{{
+						Key:   "e.url",
+						Value: url,
+					}},
+				},
+			},
+		),
+	)
 
 	// if error display the error
 	if err != nil {
@@ -100,11 +112,20 @@ func (r sChatRep) UpdateFeedCheckForUrl(url string, articleFound int, chat *data
 }
 
 // Add a new feed for the chat
-func (r sChatRep) PushNewFeed(url string, chat *database.Chat) bool {
-	chat.Feeds = append(chat.Feeds, *database.NewFeed(url))
-
-	// update the db
-	err := r.save(chat)
+func (r sChatRep) PushNewFeed(url string, chatId string) bool {
+	_, err := database.ChatCollection.UpdateOne(
+		context.TODO(),
+		bson.D{{
+			Key:   "chatid",
+			Value: chatId,
+		}},
+		bson.D{{
+			Key: "$push",
+			Value: bson.M{
+				"feeds": database.NewFeed(url),
+			},
+		}},
+	)
 
 	// if error display the error
 	if err != nil {
@@ -116,7 +137,12 @@ func (r sChatRep) PushNewFeed(url string, chat *database.Chat) bool {
 }
 
 // Create a new Chat
-func (r sChatRep) Create(chatid string, userid int64, tags []string, feedsUrl []string) *database.Chat {
+func (r sChatRep) Create(
+	chatid string,
+	userid int64,
+	tags []string,
+	feedsUrl []string,
+) *database.Chat {
 	var listOfFeeds []database.Feed
 	for _, url := range feedsUrl {
 		listOfFeeds = append(listOfFeeds, *database.NewFeed(url))
@@ -135,22 +161,4 @@ func (r sChatRep) Create(chatid string, userid int64, tags []string, feedsUrl []
 	}
 
 	return chat
-}
-
-// Save the chat with the new value in the db
-func (r sChatRep) save(chat *database.Chat) error {
-	// update the db
-	_, err := database.ChatCollection.UpdateOne(
-		context.TODO(),
-		bson.D{{
-			Key:   "chatid",
-			Value: chat.ChatId,
-		}},
-		bson.D{{
-			Key:   "$set",
-			Value: chat,
-		}},
-	)
-
-	return err
 }

@@ -224,7 +224,7 @@ func TestJobExecuteArticleFound(t *testing.T) {
 	telegramServiceMock.On("TelegramUpdateTyping", false).Return()
 	telegramServiceMock.On("TelegramPostMessage", mock.Anything).Return()
 
-	chatRepositoryMock.On("UpdateFeedCheckForUrl", feed.Url, 1, chat).Return(true)
+	chatRepositoryMock.On("UpdateFeedCheckForUrl", feed.Url, 1, chat.ChatId).Return(true)
 
 	err := job(*feed, chat)
 
@@ -236,5 +236,5 @@ func TestJobExecuteArticleFound(t *testing.T) {
 	telegramServiceMock.AssertCalled(t, "TelegramPostMessage", mock.Anything)
 	telegramServiceMock.AssertCalled(t, "TelegramUpdateTyping", mock.Anything)
 
-	chatRepositoryMock.AssertCalled(t, "UpdateFeedCheckForUrl", feed.Url, 1, chat)
+	chatRepositoryMock.AssertCalled(t, "UpdateFeedCheckForUrl", feed.Url, 1, chat.ChatId)
 }

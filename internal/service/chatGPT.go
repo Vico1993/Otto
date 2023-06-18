@@ -82,10 +82,6 @@ func (s *ChatGPTService) Ask(query string) (*GptAskResponse, error) {
 	return &response, nil
 }
 
-func String(bodyBytes []byte) {
-	panic("unimplemented")
-}
-
 // Marshal the user object into a JSON-encoded byte slice
 func (s *ChatGPTService) buildReqBody(query string) ([]byte, error) {
 	request := newGPTRequest([]GptMessage{

@@ -3,12 +3,14 @@ package service
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"os"
 )
 
-type IChatGPTService interface{}
+type IChatGPTService interface {
+	Ask(query string) *GptAskResponse
+}
 
 type ChatGPTService struct {
 	baseUrl string
@@ -41,28 +43,9 @@ func (s *ChatGPTService) buildRequest(body []byte, path string) *http.Request {
 	return req
 }
 
-// Marshal the user object into a JSON-encoded byte slice
-func buildReqBody(query string) []byte {
-	request := newGPTRequest([]GptMessage{
-		{
-			Role:    "user",
-			Content: query,
-		},
-	})
-
-	body, err := json.Marshal(request)
-
-	if err != nil {
-		fmt.Println("Request parse error")
-		return nil
-	}
-
-	return body
-}
-
 // Ask question to ChatGPT
 func (s *ChatGPTService) Ask(query string) *GptAskResponse {
-	body := buildReqBody(query)
+	body := s.buildReqBody(query)
 	if body == nil {
 		return nil
 	}
@@ -80,7 +63,7 @@ func (s *ChatGPTService) Ask(query string) *GptAskResponse {
 	defer resp.Body.Close()
 
 	// Read the response body into a byte slice
-	bodyBytes, err := ioutil.ReadAll(resp.Body)
+	bodyBytes, err := io.ReadAll(resp.Body)
 	if err != nil {
 		panic(err)
 	}
@@ -94,6 +77,25 @@ func (s *ChatGPTService) Ask(query string) *GptAskResponse {
 	}
 
 	return &response
+}
+
+// Marshal the user object into a JSON-encoded byte slice
+func (s *ChatGPTService) buildReqBody(query string) []byte {
+	request := newGPTRequest([]GptMessage{
+		{
+			Role:    "user",
+			Content: query,
+		},
+	})
+
+	body, err := json.Marshal(request)
+
+	if err != nil {
+		fmt.Println("Request parse error")
+		return nil
+	}
+
+	return body
 }
 
 // Message sent by ChatGpt

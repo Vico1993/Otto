@@ -88,8 +88,12 @@ func (r sChatRep) UpdateFeedCheckForUrl(
 		}},
 		bson.D{{Key: "$set", Value: bson.M{
 			"feeds.$[e].lasttimeparsed": time.Now(),
-			"feeds.$[e].articleFound":   articleFound,
-		}}},
+		}}, {
+			Key: "$inc",
+			Value: bson.M{
+				"feeds.$[e].articlefound": articleFound,
+			},
+		}},
 		options.Update().SetArrayFilters(
 			options.ArrayFilters{
 				Filters: []interface{}{

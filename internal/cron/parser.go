@@ -22,8 +22,8 @@ type parser struct {
 }
 
 type parseResult struct {
-	feedTitle string
-	articles  []*database.Article
+	FeedTitle string
+	Articles  []*database.Article
 }
 
 // Parse an url to retrieve a list of articles matching the list of tags
@@ -36,7 +36,7 @@ func (p *parser) execute(articleRepository repository.IArticleRepository) (*pars
 		return nil, errors.New("Couldn't parsed " + url.Host + ": " + err.Error())
 	}
 
-	var articles []*database.Article
+	articles := []*database.Article{}
 	for _, item := range feed.Items {
 		// If the category doesn't match with the interest tags
 		match := p.isCategoriesAndTagsMatch(item.Categories)
@@ -64,8 +64,8 @@ func (p *parser) execute(articleRepository repository.IArticleRepository) (*pars
 	}
 
 	return &parseResult{
-		feedTitle: feed.Title,
-		articles:  articles,
+		FeedTitle: feed.Title,
+		Articles:  articles,
 	}, nil
 }
 

@@ -101,9 +101,9 @@ func TestExecuteSuccessfulFeed(t *testing.T) {
 	articleRepositoryMock.AssertCalled(t, "Create", item.Title, item.Published, item.Link, f.Title, item.Authors[0].Name, []string{"tag1"}, item.Categories)
 
 	assert.Nil(t, err, "The error object should be nil")
-	assert.Len(t, result.articles, 1, "After execute should receive 1 article")
+	assert.Len(t, result.Articles, 1, "After execute should receive 1 article")
 
-	assert.EqualValues(t, articleExpected.Title, result.articles[0].Title, "The expected article should be the one set on the mock return")
+	assert.EqualValues(t, articleExpected.Title, result.Articles[0].Title, "The expected article should be the one set on the mock return")
 }
 
 func TestExecuteArticleAlreadyInDB(t *testing.T) {
@@ -162,7 +162,7 @@ func TestExecuteArticleAlreadyInDB(t *testing.T) {
 	articleRepositoryMock.AssertNotCalled(t, "Create")
 
 	assert.Nil(t, err, "The error object should be nil")
-	assert.Len(t, result.articles, 0, "After execute should receive 0 article has it's already found")
+	assert.Len(t, result.Articles, 0, "After execute should receive 0 article has it's already found")
 }
 
 func TestExecuteArticleNoCategoryMatch(t *testing.T) {
@@ -208,7 +208,7 @@ func TestExecuteArticleNoCategoryMatch(t *testing.T) {
 	articleRepositoryMock.AssertNotCalled(t, "Create")
 
 	assert.Nil(t, err, "The error object should be nil")
-	assert.Len(t, result.articles, 0, "Since no category match, should return 0")
+	assert.Len(t, result.Articles, 0, "Since no category match, should return 0")
 }
 
 func TestExecuteParsingFailed(t *testing.T) {

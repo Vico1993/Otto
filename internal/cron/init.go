@@ -97,17 +97,17 @@ func job(feed database.Feed, chat *database.Chat) error {
 		return err
 	}
 
-	if len(result.articles) == 0 {
+	if len(result.Articles) == 0 {
 		return nil
 	}
 
-	for _, article := range result.articles {
+	for _, article := range result.Articles {
 		telegram.TelegramUpdateTyping(chat.ChatId, true)
 		telegram.TelegramPostMessage(
 			chat.ChatId,
 			BuildMessage(
 				article.Title,
-				result.feedTitle,
+				result.FeedTitle,
 				article.Author,
 				article.MatchingTags,
 				article.Link,
@@ -116,8 +116,11 @@ func job(feed database.Feed, chat *database.Chat) error {
 		telegram.TelegramUpdateTyping(chat.ChatId, false)
 	}
 
+	fmt.Println(feed.Url)
+	fmt.Println(len(result.Articles))
+
 	// Update feed after check
-	repository.Chat.UpdateFeedCheckForUrl(feed.Url, len(result.articles), chat.ChatId)
+	repository.Chat.UpdateFeedCheckForUrl(feed.Url, len(result.Articles), chat.ChatId)
 
 	return nil
 }

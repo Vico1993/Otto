@@ -116,9 +116,6 @@ func job(feed database.Feed, chat *database.Chat) error {
 		telegram.TelegramUpdateTyping(chat.ChatId, false)
 	}
 
-	fmt.Println(feed.Url)
-	fmt.Println(len(result.Articles))
-
 	// Update feed after check
 	repository.Chat.UpdateFeedCheckForUrl(feed.Url, len(result.Articles), chat.ChatId)
 

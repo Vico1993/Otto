@@ -4,6 +4,8 @@
 
 Otto is a bot designed to help you stay up-to-date with the latest news by monitoring RSS feeds and sending notifications via Telegram.
 
+This part of the code only contains the API with the gestion of the Mongo DB
+
 ## Table of Contents
 
 -   [Getting Started](#getting-started)

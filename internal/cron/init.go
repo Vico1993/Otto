@@ -30,7 +30,7 @@ func Init() {
 
 	// Start executing cron Async
 	// For now..
-	scheduler.StartAsync()
+	scheduler.StartBlocking()
 
 	fmt.Println("Cron ready for all chats!!")
 }
@@ -66,6 +66,7 @@ func startJobForChat(chat *database.Chat) {
 		// Start at different time to avoid parsing all feed at the same time
 		when := getDelay(len(chat.Feeds)) * n
 
+		fmt.Println("Adding Job for " + chat.ChatId + " -> " + feed.Url)
 		_, err := scheduler.Every(1).
 			Hour().
 			Tag(chat.ChatId).

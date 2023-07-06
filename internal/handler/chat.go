@@ -29,11 +29,11 @@ func GetChatById(c *gin.Context) {
 func GetChatFeeds(c *gin.Context) {
 	chat := repository.Chat.FindByChatId(c.Param("id"))
 
-	if chat == nil {
-		c.JSON(http.StatusNotFound, nil)
+	if chat != nil {
+		c.JSON(http.StatusOK, chat.Feeds)
 	}
 
-	c.JSON(http.StatusOK, chat.Feeds)
+	c.JSON(http.StatusNotFound, nil)
 }
 
 type postFeed struct {

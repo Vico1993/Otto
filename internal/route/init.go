@@ -8,4 +8,6 @@ import (
 // Init routes
 func Init(r *gin.Engine) {
 	r.GET("/ping", handler.Ping)
+
+	chatRoutes(r)
 }

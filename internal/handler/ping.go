@@ -10,6 +10,7 @@ import (
 // Enpoint to make sure the API is alive
 func Ping(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
+		"message": "pong",
 		"version": utils.GetManifestVersion(),
 	})
 }

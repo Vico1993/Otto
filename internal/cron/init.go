@@ -73,7 +73,7 @@ func startJobForChat(chat *database.Chat) {
 			StartAt(time.Now().Add(time.Duration(when) * time.Minute)).
 			Do(func() {
 				fmt.Println("Start Check for :" + feed.Url)
-				err := job(feed, chat)
+				err := job(&feed, chat)
 				if err != nil {
 					telegram.TelegramPostMessage(chat.ChatId, "Couldn't checked: *"+url.Host+"*-> _"+err.Error()+"_")
 				}
@@ -88,7 +88,7 @@ func startJobForChat(chat *database.Chat) {
 }
 
 // Job to execute
-func job(feed database.Feed, chat *database.Chat) error {
+func job(feed *database.Feed, chat *database.Chat) error {
 	parser := &parser{
 		url:  feed.Url,
 		tags: append(feed.Tags, chat.Tags...),

@@ -94,7 +94,7 @@ func TestJobExecuteReturnError(t *testing.T) {
 		return nil, errors.New("Failling...")
 	}
 
-	err := job(*feed, database.NewChat("124", 123, []database.Feed{*feed}, "tag1", "tag2"))
+	err := job(feed, database.NewChat("124", 123, []database.Feed{*feed}, "tag1", "tag2"))
 
 	fmt.Println(err)
 
@@ -143,7 +143,7 @@ func TestJobExecuteNoArticlesFound(t *testing.T) {
 	telegramServiceMock := new(service.MocksTelegramService)
 	telegram = telegramServiceMock
 
-	err := job(*feed, database.NewChat("124", 123, []database.Feed{*feed}, "tag1", "tag2"))
+	err := job(feed, database.NewChat("124", 123, []database.Feed{*feed}, "tag1", "tag2"))
 
 	assert.Nil(t, err)
 
@@ -226,7 +226,7 @@ func TestJobExecuteArticleFound(t *testing.T) {
 
 	chatRepositoryMock.On("UpdateFeedCheckForUrl", feed.Url, 1, chat.ChatId).Return(true)
 
-	err := job(*feed, chat)
+	err := job(feed, chat)
 
 	assert.Nil(t, err)
 

@@ -30,7 +30,7 @@ func Init() {
 
 	// Start executing cron Async
 	// For now..
-	scheduler.StartBlocking()
+	scheduler.StartAsync()
 
 	fmt.Println("Cron ready for all chats!!")
 }

@@ -57,6 +57,14 @@ To run tests, use the following command:
 make test
 ```
 
+## TIPS
+
+To make sure it's easy to build, I use: gow. Once install:
+
+```sh
+make watch
+```
+
 ## Usage
 
 To use Otto, run the following command:

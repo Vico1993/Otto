@@ -88,6 +88,7 @@ func startJobForChat(chat *database.Chat) {
 
 // Job to execute
 func job(feed *database.Feed, chat *database.Chat) error {
+	fmt.Println("Start Working on : " + feed.Url)
 	parser := &parser{
 		url:  feed.Url,
 		tags: append(feed.Tags, chat.Tags...),

@@ -1,4 +1,4 @@
-.PHONY: ensure_deps build test lint push_init_chat
+.PHONY: ensure_deps build test lint push_init_chat watch
 
 default: test lint
 
@@ -28,3 +28,7 @@ lint_fix:
 push_init_chat:
 	@ echo "Start pushing data in MONGO DB"
 	@ go run ./scripts/init-data.go
+
+watch:
+	@ echo "👀  Continue working... I'm watching 👀"
+	@ gow -c run ./internal

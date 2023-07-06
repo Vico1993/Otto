@@ -1,6 +1,6 @@
 # Otto
 
-[![Coverage](https://coveralls.io/repos/github/Vico1993/Otto/badge.svg?branch=main)](https://coveralls.io/github/Vico1993/Otto?branch=main)
+[![Coverage Status](https://coveralls.io/repos/github/Vico1993/Otto/badge.svg?branch=main)](https://coveralls.io/github/Vico1993/Otto?branch=main)
 
 Otto is a bot designed to help you stay up-to-date with the latest news by monitoring RSS feeds and sending notifications via Telegram.
 
@@ -55,6 +55,14 @@ To run tests, use the following command:
 
 ```sh
 make test
+```
+
+## TIPS
+
+To make sure it's easy to build, I use: gow. Once install:
+
+```sh
+make watch
 ```
 
 ## Usage

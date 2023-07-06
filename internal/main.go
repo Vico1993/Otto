@@ -1,13 +1,16 @@
 package main
 
 import (
+	"log"
 	"os"
 
+	"github.com/gin-gonic/gin"
 	"github.com/subosito/gotenv"
 
 	"github.com/Vico1993/Otto/internal/cron"
 	"github.com/Vico1993/Otto/internal/database"
 	"github.com/Vico1993/Otto/internal/repository"
+	"github.com/Vico1993/Otto/internal/route"
 	"github.com/Vico1993/Otto/internal/service"
 )
 
@@ -28,4 +31,14 @@ func main() {
 
 	// Initialisation of the cron
 	cron.Init()
+
+	r := gin.Default()
+
+	// Init routes
+	route.Init(r)
+
+	err := r.Run()
+	if err != nil {
+		log.Fatal(err)
+	}
 }

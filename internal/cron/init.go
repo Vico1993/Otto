@@ -60,8 +60,8 @@ func startJobForChat(chat *database.Chat) {
 	n := 1
 	for _, feed := range chat.Feeds {
 		// Copy val to be sure it's not overrited with the next iteration
-		rul := feed.Url
-		url, _ := url.Parse(rul)
+		feed := feed
+		url, _ := url.Parse(feed.Url)
 
 		// Start at different time to avoid parsing all feed at the same time
 		when := getDelay(len(chat.Feeds)) * n
@@ -72,8 +72,7 @@ func startJobForChat(chat *database.Chat) {
 			Tag(chat.ChatId).
 			StartAt(time.Now().Add(time.Duration(when) * time.Minute)).
 			Do(func() {
-				fmt.Println("Start Check for :" + feed.Url)
-				err := job(feed, chat)
+				err := job(&feed, chat)
 				if err != nil {
 					telegram.TelegramPostMessage(chat.ChatId, "Couldn't checked: *"+url.Host+"*-> _"+err.Error()+"_")
 				}
@@ -88,7 +87,7 @@ func startJobForChat(chat *database.Chat) {
 }
 
 // Job to execute
-func job(feed database.Feed, chat *database.Chat) error {
+func job(feed *database.Feed, chat *database.Chat) error {
 	parser := &parser{
 		url:  feed.Url,
 		tags: append(feed.Tags, chat.Tags...),

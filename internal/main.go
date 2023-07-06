@@ -28,14 +28,4 @@ func main() {
 
 	// Initialisation of the cron
 	cron.Init()
-
-	// r := gin.Default()
-
-	// // Init routes
-	// route.Init(r)
-
-	// err := r.Run()
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
 }

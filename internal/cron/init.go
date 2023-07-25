@@ -19,24 +19,42 @@ var gofeedParser = gofeed.NewParser()
 
 // Initialisation of the cronjob at the start of the program
 func Init() {
-	chats := repository.Chat.GetAll()
+	_, err := scheduler.Every(1).Hour().Tag("MainJob").Do(func() {
+		mainJob()
+	})
 
-	// Load all chat and set each cron
-	for _, chat := range chats {
-		SetupCronForChat(
-			chat,
-		)
+	if err != nil {
+		fmt.Println("Couldn't initiate the main cron - " + err.Error())
 	}
 
-	// Start executing cron Async
+	// Start executing cron blocking
 	// For now..
 	scheduler.StartBlocking()
 
 	fmt.Println("Cron ready for all chats!!")
 }
 
+// Function that will check chats to be always up to date
+func mainJob() {
+	chats := repository.Chat.GetAll()
+
+	// Load all chat and set each cron
+	for _, chat := range chats {
+		chat := chat
+
+		jobs, err := scheduler.FindJobsByTag(chat.ChatId)
+		// No job found but we have feeds
+		// OR if we have more or less feed than before
+		if (err != nil && len(chat.Feeds) > 0) || (len(chat.Feeds) != len(jobs)) {
+			setupCronForChat(
+				chat,
+			)
+		}
+	}
+}
+
 // Will setup cron job for that chat
-func SetupCronForChat(chat *database.Chat) {
+func setupCronForChat(chat *database.Chat) {
 	fmt.Println("Start cleaning cron for: " + chat.ChatId)
 	resetCronForChatId(chat)
 

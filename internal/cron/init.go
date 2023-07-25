@@ -24,7 +24,7 @@ func Init() {
 	})
 
 	if err != nil {
-		fmt.Println("Couldn't initiate the main cron - " + err.Error())
+		fmt.Println("Couldn't initiate the main job - " + err.Error())
 	}
 
 	// Start executing cron blocking
@@ -38,6 +38,7 @@ func Init() {
 func mainJob() {
 	chats := repository.Chat.GetAll()
 
+	fmt.Println("MainJob - Start")
 	// Load all chat and set each cron
 	for _, chat := range chats {
 		chat := chat
@@ -46,11 +47,14 @@ func mainJob() {
 		// No job found but we have feeds
 		// OR if we have more or less feed than before
 		if (err != nil && len(chat.Feeds) > 0) || (len(chat.Feeds) != len(jobs)) {
+			fmt.Println("MainJob - Update for : " + chat.ChatId)
 			setupCronForChat(
 				chat,
 			)
 		}
 	}
+
+	fmt.Println("MainJob - End")
 }
 
 // Will setup cron job for that chat
@@ -106,7 +110,7 @@ func startJobForChat(chat *database.Chat) {
 
 // Job to execute
 func job(feed *database.Feed, chat *database.Chat) error {
-	fmt.Println("Start Working on : " + feed.Url)
+	fmt.Println("Start Working for : " + chat.ChatId + " - " + feed.Url)
 	parser := &parser{
 		url:  feed.Url,
 		tags: append(feed.Tags, chat.Tags...),

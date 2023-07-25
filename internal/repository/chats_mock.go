@@ -10,8 +10,8 @@ type MocksChatRep struct {
 }
 
 func (m *MocksChatRep) GetAll() []*database.Chat {
-	m.Called()
-	return []*database.Chat{}
+	args := m.Called()
+	return args.Get(0).([]*database.Chat)
 }
 
 func (m *MocksChatRep) FindByChatId(chatId string) *database.Chat {

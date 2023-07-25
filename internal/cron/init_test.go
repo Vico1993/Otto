@@ -72,7 +72,7 @@ func TestSetupCronForChat(t *testing.T) {
 
 	assert.Len(t, scheduler.Jobs(), 2, "We should have only 2 job present at the initialisation")
 
-	SetupCronForChat(chat)
+	setupCronForChat(chat)
 
 	jobs := scheduler.Jobs()
 	assert.Len(t, jobs, 1, "We should have only 1 job now for that chat")
@@ -237,4 +237,78 @@ func TestJobExecuteArticleFound(t *testing.T) {
 	telegramServiceMock.AssertCalled(t, "TelegramUpdateTyping", chat.ChatId, mock.Anything)
 
 	chatRepositoryMock.AssertCalled(t, "UpdateFeedCheckForUrl", feed.Url, 1, chat.ChatId)
+}
+
+func TestMainJobNoNewFeed(t *testing.T) {
+	feed := database.NewFeed("https://google.com")
+	chat := database.NewChat("1234", 123, []database.Feed{
+		*feed,
+	})
+	_, _ = scheduler.Every(1).Tag(chat.ChatId).Week().Do(func() {
+		fmt.Println("Test job")
+	})
+
+	chatRepositoryMock := new(repository.MocksChatRep)
+	repository.Chat = chatRepositoryMock
+
+	chatRepositoryMock.On("GetAll").Return([]*database.Chat{chat})
+
+	jobs, _ := scheduler.FindJobsByTag(chat.ChatId)
+	assert.Len(t, jobs, 1, "We should have only 1 job")
+
+	mainJob()
+
+	jobs, _ = scheduler.FindJobsByTag(chat.ChatId)
+	assert.Len(t, jobs, 1, "We should have only 1 job even after the main job")
+
+	_ = scheduler.RemoveByTag(chat.ChatId)
+}
+
+func TestMainJobNoJobFoundForChat(t *testing.T) {
+	feed := database.NewFeed("https://google.com")
+	chat := database.NewChat("1234", 123, []database.Feed{
+		*feed,
+	})
+
+	chatRepositoryMock := new(repository.MocksChatRep)
+	repository.Chat = chatRepositoryMock
+
+	chatRepositoryMock.On("GetAll").Return([]*database.Chat{chat})
+
+	_, err := scheduler.FindJobsByTag(chat.ChatId)
+	assert.Error(t, err, "gocron: no jobs found with given tag")
+
+	mainJob()
+
+	jobs, _ := scheduler.FindJobsByTag(chat.ChatId)
+	assert.Len(t, jobs, 1, "We should have only 1 job")
+
+	_ = scheduler.RemoveByTag(chat.ChatId)
+}
+
+func TestMainJobAddNewFeed(t *testing.T) {
+	feed := database.NewFeed("https://google.com")
+	feed2 := database.NewFeed("https://google2.com")
+	chat := database.NewChat("1234", 123, []database.Feed{
+		*feed, *feed2,
+	})
+
+	_, _ = scheduler.Every(1).Tag(chat.ChatId).Week().Do(func() {
+		fmt.Println("Test job")
+	})
+
+	chatRepositoryMock := new(repository.MocksChatRep)
+	repository.Chat = chatRepositoryMock
+
+	chatRepositoryMock.On("GetAll").Return([]*database.Chat{chat})
+
+	jobs, _ := scheduler.FindJobsByTag(chat.ChatId)
+	assert.Len(t, jobs, 1, "We should have only 1 job")
+
+	mainJob()
+
+	jobs, _ = scheduler.FindJobsByTag(chat.ChatId)
+	assert.Len(t, jobs, 2, "We should have only 2 job")
+
+	_ = scheduler.RemoveByTag(chat.ChatId)
 }

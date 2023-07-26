@@ -25,3 +25,23 @@ func TestBuildMessage(t *testing.T) {
 		"The template is not matching the expected translation!",
 	)
 }
+
+func TestNoTags(t *testing.T) {
+	// Set up test data
+	title := "Title"
+	platform := "platform"
+	author := "author"
+	tags := []string{}
+	link := "https://example.com"
+
+	// Override templates
+	templates = []string{"$TITLE$ on $PLATFORM$. by $AUTHOR$. check link: $LINK$ is about: $TAGS$"}
+
+	res := BuildMessage(title, platform, author, tags, link)
+	assert.Equal(
+		t,
+		"Title on platform. by author. check link: https://example.com is about: #UNKNOWN",
+		res,
+		"The template is not matching the expected translation!",
+	)
+}

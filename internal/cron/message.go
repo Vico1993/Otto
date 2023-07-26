@@ -93,6 +93,10 @@ $TAGS$
 
 // Will inject the parameters into the template choose randomly.
 func BuildMessage(title string, platform string, author string, tags []string, link string) string {
+	if len(tags) == 0 {
+		tags = []string{"UNKNOWN"}
+	}
+
 	text := templates[rand.Intn(len(templates))]
 	replacer := strings.NewReplacer("$TITLE$", title, "$AUTHOR$", author, "$PLATFORM$", platform, "$TAGS$", "#"+strings.Join(tags, ", #"), "$LINK$", link)
 

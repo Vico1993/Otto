@@ -53,13 +53,18 @@ func (p *parser) execute(articleRepository repository.IArticleRepository) (*pars
 			continue
 		}
 
+		author := "Unknown"
+		if len(item.Authors) > 0 {
+			author = item.Authors[0].Name
+		}
+
 		articles = append(articles,
 			articleRepository.Create(
 				item.Title,
 				item.Published,
 				item.Link,
 				feed.Title,
-				item.Authors[0].Name,
+				author,
 				match,
 				item.Categories...,
 			),

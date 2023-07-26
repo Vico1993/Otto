@@ -237,3 +237,73 @@ func TestExecuteParsingFailed(t *testing.T) {
 		assert.Equal(t, errors.New("Couldn't parsed test.com: Failling..."), err, "Error message doesn't match")
 	}
 }
+
+func TestExecuteNoCategoriesInItem(t *testing.T) {
+	p := &parser{
+		url:  "https://test.com/feed",
+		tags: []string{"tag1", "tag2"},
+	}
+
+	item := &gofeed.Item{
+		Title:      "Super Title for an Article",
+		Published:  "2023-06-04",
+		Link:       "https://test.com/article-1",
+		Categories: []string{},
+		Authors: []*gofeed.Person{
+			{
+				Name: "Victor",
+			},
+		},
+	}
+
+	f := &gofeed.Feed{
+		Title: "Super Test",
+		Items: []*gofeed.Item{
+			item,
+		},
+	}
+
+	oldParseUrl := parseUrl
+	defer func() { parseUrl = oldParseUrl }()
+
+	parseUrl = func(url string) (*gofeed.Feed, error) {
+		return f, nil
+	}
+
+	// Mock Article Repository
+	articleRepositoryMock := new(repository.MocksArticleRep)
+
+	// Article repository return nil on Find
+	articleRepositoryMock.On("Find", "title", item.Title).Return(nil)
+
+	articleExpected := database.NewArticle(
+		item.Title,
+		item.Published,
+		item.Link,
+		f.Title,
+		item.Authors[0].Name,
+		[]string{"tag1"},
+		item.Categories...,
+	)
+
+	// Article repository return an article on Create
+	articleRepositoryMock.On("Create",
+		item.Title,
+		item.Published,
+		item.Link,
+		f.Title,
+		item.Authors[0].Name,
+		[]string{},
+		item.Categories,
+	).Return(articleExpected)
+
+	result, err := p.execute(articleRepositoryMock)
+
+	articleRepositoryMock.AssertCalled(t, "Find", "title", item.Title)
+	articleRepositoryMock.AssertCalled(t, "Create", item.Title, item.Published, item.Link, f.Title, item.Authors[0].Name, []string{}, item.Categories)
+
+	assert.Nil(t, err, "The error object should be nil")
+	assert.Len(t, result.Articles, 1, "After execute should receive 1 article")
+
+	assert.EqualValues(t, articleExpected.Title, result.Articles[0].Title, "The expected article should be the one set on the mock return")
+}

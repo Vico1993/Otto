@@ -38,9 +38,12 @@ func (p *parser) execute(articleRepository repository.IArticleRepository) (*pars
 
 	articles := []*database.Article{}
 	for _, item := range feed.Items {
+		item := item
+
 		// If the category doesn't match with the interest tags
+		// If item doesn't have any categories
 		match := p.isCategoriesAndTagsMatch(item.Categories)
-		if len(match) == 0 {
+		if len(match) == 0 && len(item.Categories) > 0 {
 			continue
 		}
 

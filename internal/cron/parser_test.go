@@ -22,6 +22,8 @@ func TestCategoriesAndTagsMatch(t *testing.T) {
 	assert.Equal(t, []string{"tag1"}, match, "Tag1 is in the list of category and tag so it should return true")
 }
 
+func TestExtractImportantWordFromString(t *testing.T) {}
+
 func TestCategoriesAndTagsWontMatch(t *testing.T) {
 	p := &parser{
 		url:  "https://test.com",

@@ -5,6 +5,7 @@ import (
 
 	"github.com/subosito/gotenv"
 
+	"github.com/Vico1993/Otto/internal/cron"
 	"github.com/Vico1993/Otto/internal/database"
 	"github.com/Vico1993/Otto/internal/repository"
 	"github.com/Vico1993/Otto/internal/service"
@@ -26,5 +27,5 @@ func main() {
 	)
 
 	// Initialisation of the cron
-	// cron.Init()
+	cron.Init()
 }

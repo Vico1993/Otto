@@ -5,6 +5,7 @@ import (
 	"net/url"
 	"strings"
 
+	textrank "github.com/DavidBelicza/TextRank/v2"
 	"github.com/Vico1993/Otto/internal/database"
 	"github.com/Vico1993/Otto/internal/repository"
 	"github.com/Vico1993/Otto/internal/utils"
@@ -15,6 +16,15 @@ import (
 var parseUrl = func(url string) (*gofeed.Feed, error) {
 	return gofeedParser.ParseURL(url)
 }
+
+var (
+	// Default Rule for parsing.
+	rule = textrank.NewDefaultRule()
+	// Default Language for filtering stop words.
+	language = textrank.NewDefaultLanguage()
+	// Default algorithm for ranking text.
+	algorithmDef = textrank.NewDefaultAlgorithm()
+)
 
 type parser struct {
 	url  string
@@ -40,10 +50,15 @@ func (p *parser) execute(articleRepository repository.IArticleRepository) (*pars
 	for _, item := range feed.Items {
 		item := item
 
+		tagsFromTitle := []string{}
+		if len(item.Categories) == 0 {
+			tagsFromTitle = p.findTagFromTitle(item.Title)
+		}
+
 		// If the category doesn't match with the interest tags
 		// If item doesn't have any categories
-		match := p.isCategoriesAndTagsMatch(item.Categories)
-		if len(match) == 0 && len(item.Categories) > 0 {
+		match := p.isCategoriesAndTagsMatch(append(item.Categories, tagsFromTitle...))
+		if len(match) == 0 {
 			continue
 		}
 
@@ -88,4 +103,24 @@ func (p *parser) isCategoriesAndTagsMatch(categories []string) []string {
 	}
 
 	return match
+}
+
+// Extract important word from the title
+func (p *parser) findTagFromTitle(title string) []string {
+	// TextRank object
+	tr := textrank.NewTextRank()
+	// Add text.
+	tr.Populate(title, language, rule)
+	// Run the ranking.
+	tr.Ranking(algorithmDef)
+
+	// Get all words order by weight.
+	words := textrank.FindSingleWords(tr)
+
+	var tags []string
+	for _, word := range words {
+		tags = append(tags, word.Word)
+	}
+
+	return tags
 }

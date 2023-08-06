@@ -8,7 +8,7 @@ require (
 	github.com/mmcdole/gofeed v1.2.1
 	github.com/stretchr/testify v1.8.4
 	github.com/subosito/gotenv v1.4.2
-	go.mongodb.org/mongo-driver v1.12.0
+	go.mongodb.org/mongo-driver v1.12.1
 )
 
 require (

@@ -156,6 +156,7 @@ func (r sChatRep) Create(
 		chatid,
 		userid,
 		listOfFeeds,
+		"",
 		tags...,
 	)
 

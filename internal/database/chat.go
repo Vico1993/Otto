@@ -22,6 +22,7 @@ func NewFeed(url string) *Feed {
 type Chat struct {
 	ChatId    string
 	UserId    int64
+	ThreadId  string
 	Tags      []string
 	Feeds     []Feed
 	CreatedAt time.Time
@@ -31,6 +32,7 @@ func NewChat(
 	chatid string,
 	userid int64,
 	feeds []Feed,
+	threadId string,
 	tags ...string,
 ) *Chat {
 	return &Chat{
@@ -38,6 +40,7 @@ func NewChat(
 		UserId:    userid,
 		Feeds:     feeds,
 		Tags:      tags,
+		ThreadId:  threadId,
 		CreatedAt: time.Now(),
 	}
 }

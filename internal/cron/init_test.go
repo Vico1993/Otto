@@ -26,7 +26,7 @@ func TestDelayWith20Element(t *testing.T) {
 }
 
 func TestResetCronForChat(t *testing.T) {
-	chat := database.NewChat("1234", 123, nil)
+	chat := database.NewChat("1234", 123, nil, "")
 	_, _ = scheduler.Every(1).Tag(chat.ChatId).Week().Do(func() {
 		fmt.Println("Test job")
 	})
@@ -42,7 +42,7 @@ func TestAddJobForChat(t *testing.T) {
 	feed := database.NewFeed("https://google.com")
 	chat := database.NewChat("1234", 123, []database.Feed{
 		*feed,
-	})
+	}, "")
 
 	startJobForChat(chat)
 
@@ -60,7 +60,7 @@ func TestSetupCronForChat(t *testing.T) {
 	feed := database.NewFeed("https://google.com")
 	chat := database.NewChat("1234", 123, []database.Feed{
 		*feed,
-	})
+	}, "")
 	_, _ = scheduler.Every(1).Tag(chat.ChatId).Week().Do(func() {
 		fmt.Println("Test job")
 	})
@@ -94,7 +94,7 @@ func TestJobExecuteReturnError(t *testing.T) {
 		return nil, errors.New("Failling...")
 	}
 
-	err := job(feed, database.NewChat("124", 123, []database.Feed{*feed}, "tag1", "tag2"))
+	err := job(feed, database.NewChat("124", 123, []database.Feed{*feed}, "", "tag1", "tag2"))
 
 	fmt.Println(err)
 
@@ -143,7 +143,7 @@ func TestJobExecuteNoArticlesFound(t *testing.T) {
 	telegramServiceMock := new(service.MocksTelegramService)
 	telegram = telegramServiceMock
 
-	err := job(feed, database.NewChat("124", 123, []database.Feed{*feed}, "tag1", "tag2"))
+	err := job(feed, database.NewChat("124", 123, []database.Feed{*feed}, "", "tag1", "tag2"))
 
 	assert.Nil(t, err)
 
@@ -178,7 +178,7 @@ func TestJobExecuteArticleFound(t *testing.T) {
 		},
 	}
 
-	chat := database.NewChat("124", 123, []database.Feed{*feed}, "tag1", "tag5")
+	chat := database.NewChat("124", 123, []database.Feed{*feed}, "", "tag1", "tag5")
 
 	oldParseUrl := parseUrl
 	defer func() { parseUrl = oldParseUrl }()
@@ -243,7 +243,7 @@ func TestMainJobNoNewFeed(t *testing.T) {
 	feed := database.NewFeed("https://google.com")
 	chat := database.NewChat("1234", 123, []database.Feed{
 		*feed,
-	})
+	}, "")
 	_, _ = scheduler.Every(1).Tag(chat.ChatId).Week().Do(func() {
 		fmt.Println("Test job")
 	})
@@ -268,7 +268,7 @@ func TestMainJobNoJobFoundForChat(t *testing.T) {
 	feed := database.NewFeed("https://google.com")
 	chat := database.NewChat("1234", 123, []database.Feed{
 		*feed,
-	})
+	}, "")
 
 	chatRepositoryMock := new(repository.MocksChatRep)
 	repository.Chat = chatRepositoryMock
@@ -291,7 +291,7 @@ func TestMainJobAddNewFeed(t *testing.T) {
 	feed2 := database.NewFeed("https://google2.com")
 	chat := database.NewChat("1234", 123, []database.Feed{
 		*feed, *feed2,
-	})
+	}, "")
 
 	_, _ = scheduler.Every(1).Tag(chat.ChatId).Week().Do(func() {
 		fmt.Println("Test job")

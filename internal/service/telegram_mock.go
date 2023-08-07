@@ -14,6 +14,10 @@ func (m *MocksTelegramService) TelegramUpdateTyping(chatId string, val bool) {
 	m.Called(chatId, val)
 }
 
+func (m *MocksTelegramService) TelegramCreateTopic(chatId string, name string) {
+	m.Called(chatId, name)
+}
+
 func (m *MocksTelegramService) GetBaseUrl() string {
 	args := m.Called()
 	return args.String(0)

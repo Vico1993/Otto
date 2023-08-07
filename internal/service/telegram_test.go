@@ -94,3 +94,26 @@ func TestNewTelegramService(t *testing.T) {
 
 	assert.Equal(t, service.GetBaseUrl(), "https://api.telegram.org/botFOO", "Url is should include FOO at the end")
 }
+
+func TestTelegramCreateTopic(t *testing.T) {
+	// Set up a mock server to receive the HTTP POST request
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, "/createForumTopic", r.URL.String(), "Unexpected URL")
+
+		data := url.Values{}
+		data.Set("chat_id", "123")
+		data.Set("name", "test")
+
+		assert.Equal(t, data.Encode(), "chat_id=123&name=test", "Body is not matching the expected body")
+
+		// Respond with a success status code
+		w.WriteHeader(http.StatusOK)
+	}))
+	defer server.Close()
+
+	s := TelegramService{
+		baseUrl: server.URL,
+	}
+
+	s.TelegramCreateTopic("123", "test")
+}

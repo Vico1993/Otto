@@ -10,6 +10,7 @@ import (
 type ITelegramService interface {
 	TelegramPostMessage(chatId string, text string)
 	TelegramUpdateTyping(chatId string, val bool)
+	TelegramCreateTopic(chatId string, name string)
 	GetBaseUrl() string
 }
 
@@ -52,6 +53,23 @@ func (s *TelegramService) TelegramUpdateTyping(chatId string, val bool) {
 
 	_, err := http.Post(
 		s.baseUrl+"/sendChatAction",
+		"application/x-www-form-urlencoded",
+		strings.NewReader(data.Encode()),
+	)
+	if err != nil {
+		panic(err)
+	}
+}
+
+// Func will create a topic in the group chat
+func (s *TelegramService) TelegramCreateTopic(chatId string, name string) {
+	data := buildData(map[string]string{
+		"chat_id": chatId,
+		"name":    name,
+	})
+
+	_, err := http.Post(
+		s.baseUrl+"/createForumTopic",
 		"application/x-www-form-urlencoded",
 		strings.NewReader(data.Encode()),
 	)

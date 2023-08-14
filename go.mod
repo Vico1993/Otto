@@ -4,7 +4,7 @@ go 1.20
 
 require (
 	github.com/DavidBelicza/TextRank/v2 v2.1.3
-	github.com/go-co-op/gocron v1.31.0
+	github.com/go-co-op/gocron v1.31.1
 	github.com/mmcdole/gofeed v1.2.1
 	github.com/stretchr/testify v1.8.4
 	github.com/subosito/gotenv v1.4.2

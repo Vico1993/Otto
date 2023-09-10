@@ -7,7 +7,7 @@ require (
 	github.com/go-co-op/gocron v1.31.1
 	github.com/mmcdole/gofeed v1.2.1
 	github.com/stretchr/testify v1.8.4
-	github.com/subosito/gotenv v1.4.2
+	github.com/subosito/gotenv v1.6.0
 	go.mongodb.org/mongo-driver v1.12.1
 )
 
@@ -37,6 +37,6 @@ require (
 	golang.org/x/crypto v0.11.0 // indirect
 	golang.org/x/net v0.12.0 // indirect
 	golang.org/x/sync v0.1.0 // indirect
-	golang.org/x/text v0.11.0 // indirect
+	golang.org/x/text v0.12.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

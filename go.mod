@@ -4,7 +4,7 @@ go 1.20
 
 require (
 	github.com/DavidBelicza/TextRank/v2 v2.1.3
-	github.com/go-co-op/gocron v1.31.1
+	github.com/go-co-op/gocron v1.33.1
 	github.com/mmcdole/gofeed v1.2.1
 	github.com/stretchr/testify v1.8.4
 	github.com/subosito/gotenv v1.6.0
@@ -22,6 +22,7 @@ require (
 	github.com/andybalholm/cascadia v1.3.1 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
+	github.com/google/uuid v1.3.1 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/klauspost/compress v1.16.4 // indirect
 	github.com/mmcdole/goxpp v1.1.0 // indirect

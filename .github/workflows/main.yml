@@ -91,7 +91,7 @@ jobs:
         needs:
             - build
         steps:
-            - uses: zendesk/checkout@v3
+            - uses: actions/checkout@v4
 
             - name: Get Manifest version
               id: manifest-version

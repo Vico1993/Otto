@@ -7,6 +7,8 @@ import (
 	"os"
 	"time"
 
+	"github.com/jackc/pgx/v5"
+
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
@@ -18,8 +20,17 @@ var ArticleCollection *mongo.Collection = nil
 var BannedUserCollection *mongo.Collection = nil
 var ChatCollection *mongo.Collection = nil
 
+var connection *pgx.Conn = nil
+
 func Init() {
 	_ = migrations()
+
+	connection, err := pgx.Connect(context.Background(), os.Getenv("DB_URI"))
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Unable to connect to database: %v\n", err)
+		os.Exit(1)
+	}
+	defer connection.Close(context.Background())
 
 	clientOptions := options.Client().ApplyURI(os.Getenv("MONGO_URI"))
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
@@ -51,6 +62,7 @@ func migrations() error {
 	)
 	if err != nil {
 		fmt.Println("Couldn't start the migrations process")
+		fmt.Println(err)
 		return err
 	}
 	if err := m.Up(); err != nil {

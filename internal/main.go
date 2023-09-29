@@ -1,9 +1,14 @@
 package main
 
 import (
+	"log"
+
+	"github.com/gin-gonic/gin"
 	"github.com/subosito/gotenv"
 
 	"github.com/Vico1993/Otto/internal/database"
+	"github.com/Vico1993/Otto/internal/middlewares"
+	"github.com/Vico1993/Otto/internal/routes"
 )
 
 func main() {
@@ -12,6 +17,19 @@ func main() {
 
 	// Load the database
 	database.Init()
+
+	r := gin.Default()
+
+	// Error Middleware
+	r.Use(middlewares.Error())
+
+	// Init routes
+	routes.Init(r)
+
+	err := r.Run()
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	// Load repository
 	// repository.Init()

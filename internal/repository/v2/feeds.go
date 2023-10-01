@@ -11,7 +11,7 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-type Feed struct {
+type dbFeed struct {
 	Id        string    `db:"id"`
 	Url       string    `db:"url"`
 	CreatedAt time.Time `db:"created_at"`
@@ -23,8 +23,8 @@ func NewFeed(
 	url string,
 	createdAt time.Time,
 	updatedAt time.Time,
-) *Feed {
-	return &Feed{
+) *dbFeed {
+	return &dbFeed{
 		Id:        database.TransformUUIDToString(uuid),
 		Url:       url,
 		CreatedAt: createdAt,
@@ -33,17 +33,17 @@ func NewFeed(
 }
 
 type IFeedRepository interface {
-	GetAll() []*Feed
-	GetOne(uuid string) *Feed
-	Create(url string) *Feed
+	GetAll() []*dbFeed
+	GetOne(uuid string) *dbFeed
+	Create(url string) *dbFeed
 	Delete(uuid string) bool
 }
 
 type SFeedRepository struct{}
 
 // Return all Feeds in the DB
-func (rep *SFeedRepository) GetAll() []*Feed {
-	var feeds []*Feed
+func (rep *SFeedRepository) GetAll() []*dbFeed {
+	var feeds []*dbFeed
 
 	q := `SELECT id, url, created_at, updated_at FROM feeds`
 	rows, err := database.Connection.Query(context.Background(), q)
@@ -79,7 +79,7 @@ func (rep *SFeedRepository) GetAll() []*Feed {
 }
 
 // Return one feed, nil if not found
-func (rep *SFeedRepository) GetOne(uuid string) *Feed {
+func (rep *SFeedRepository) GetOne(uuid string) *dbFeed {
 	q := `SELECT id, url, created_at, updated_at FROM feeds where id=$1`
 
 	var id pgtype.UUID
@@ -111,7 +111,7 @@ func (rep *SFeedRepository) GetOne(uuid string) *Feed {
 }
 
 // Create one feed
-func (rep *SFeedRepository) Create(url string) *Feed {
+func (rep *SFeedRepository) Create(url string) *dbFeed {
 	q := `INSERT INTO feeds (id, url) VALUES ($1, $2);`
 
 	newId := uuid.New().String()

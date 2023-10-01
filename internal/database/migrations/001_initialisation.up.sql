@@ -9,13 +9,12 @@ CREATE TABLE IF NOT EXISTS articles (
     "id" uuid NOT NULL PRIMARY KEY,
     "feed_id" uuid NOT NULL,
     "title" text NOT NULL,
-    "published" text NOT NULL,
     "source" text NOT NULL,
     "link" text NOT NULL,
     "tags" text[] NOT NULL,
     "created_at" timestamp NOT NULL DEFAULT now(),
     "updated_at" timestamp NOT NULL DEFAULT now(),
-    FOREIGN KEY (feed_id) REFERENCES feeds(id)
+    FOREIGN KEY (feed_id) REFERENCES feeds(id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS chats (
@@ -33,8 +32,8 @@ CREATE TABLE IF NOT EXISTS chat_feed (
     "feed_id" uuid NOT NULL,
     "created_at" timestamp NOT NULL DEFAULT now(),
     "updated_at" timestamp NOT NULL DEFAULT now(),
-    FOREIGN KEY (feed_id) REFERENCES feeds(id),
-    FOREIGN KEY (chat_id) REFERENCES chats(id)
+    FOREIGN KEY (feed_id) REFERENCES feeds(id) ON DELETE CASCADE,
+    FOREIGN KEY (chat_id) REFERENCES chats(id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS chat_article (
@@ -43,6 +42,6 @@ CREATE TABLE IF NOT EXISTS chat_article (
     "article_id" uuid NOT NULL,
     "created_at" timestamp NOT NULL DEFAULT now(),
     "updated_at" timestamp NOT NULL DEFAULT now(),
-    FOREIGN KEY (article_id) REFERENCES articles(id),
-    FOREIGN KEY (chat_id) REFERENCES chats(id)
+    FOREIGN KEY (article_id) REFERENCES articles(id) ON DELETE CASCADE,
+    FOREIGN KEY (chat_id) REFERENCES chats(id) ON DELETE CASCADE
 );

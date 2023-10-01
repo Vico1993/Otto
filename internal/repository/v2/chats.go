@@ -13,7 +13,7 @@ import (
 	"github.com/lib/pq"
 )
 
-type Chat struct {
+type dbChat struct {
 	Id             string    `db:"id"`
 	TelegramChatId string    `db:"telegram_chat_id"`
 	TelegramUserId *string   `db:"telegram_user_id, omitempty"`
@@ -29,14 +29,14 @@ func NewChat(
 	tags []string,
 	createdAt time.Time,
 	updatedAt time.Time,
-) *Chat {
+) *dbChat {
 
 	var trimedTags []string
 	for _, tag := range tags {
 		trimedTags = append(trimedTags, strings.TrimSpace(tag))
 	}
 
-	return &Chat{
+	return &dbChat{
 		Id:             database.TransformUUIDToString(uuid),
 		TelegramChatId: telegramChatId,
 		TelegramUserId: telegramUserId,
@@ -47,17 +47,17 @@ func NewChat(
 }
 
 type IChatRepository interface {
-	GetAll() []*Chat
-	GetOne(uuid string) *Chat
-	Create(telegramChatId string, telegramUserId *string, tags []string) *Chat
+	GetAll() []*dbChat
+	GetOne(uuid string) *dbChat
+	Create(telegramChatId string, telegramUserId *string, tags []string) *dbChat
 	Delete(uuid string) bool
 }
 
 type SChatRepository struct{}
 
 // Return all Chats in the DB
-func (rep *SChatRepository) GetAll() []*Chat {
-	var chats []*Chat
+func (rep *SChatRepository) GetAll() []*dbChat {
+	var chats []*dbChat
 
 	q := `SELECT id, telegram_chat_id, telegram_user_id, tags, created_at, updated_at FROM chats`
 	rows, err := database.Connection.Query(context.Background(), q)
@@ -98,7 +98,7 @@ func (rep *SChatRepository) GetAll() []*Chat {
 }
 
 // Return one chat, nil if not found
-func (rep *SChatRepository) GetOne(uuid string) *Chat {
+func (rep *SChatRepository) GetOne(uuid string) *dbChat {
 	q := `SELECT id, telegram_chat_id, telegram_user_id, tags, created_at, updated_at FROM chats where id=$1`
 
 	var id pgtype.UUID
@@ -136,7 +136,7 @@ func (rep *SChatRepository) GetOne(uuid string) *Chat {
 }
 
 // Create one chat
-func (rep *SChatRepository) Create(telegramChatId string, telegramUserId *string, tags []string) *Chat {
+func (rep *SChatRepository) Create(telegramChatId string, telegramUserId *string, tags []string) *dbChat {
 	q := `INSERT INTO chats (id, telegram_chat_id, telegram_user_id, tags) VALUES ($1, $2, $3, $4);`
 
 	newId := uuid.New().String()

@@ -8,6 +8,7 @@ import (
 
 	"github.com/Vico1993/Otto/internal/database"
 	"github.com/Vico1993/Otto/internal/middlewares"
+	v2 "github.com/Vico1993/Otto/internal/repository/v2"
 	"github.com/Vico1993/Otto/internal/routes"
 )
 
@@ -17,6 +18,9 @@ func main() {
 
 	// Load the database
 	database.Init()
+
+	// Load repository
+	v2.Init()
 
 	r := gin.Default()
 

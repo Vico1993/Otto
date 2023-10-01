@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgtype"
 
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
@@ -20,17 +21,22 @@ var ArticleCollection *mongo.Collection = nil
 var BannedUserCollection *mongo.Collection = nil
 var ChatCollection *mongo.Collection = nil
 
-var connection *pgx.Conn = nil
+var Connection *pgx.Conn = nil
+
+func TransformUUIDToString(uuid pgtype.UUID) string {
+	return fmt.Sprintf("%x-%x-%x-%x-%x", uuid.Bytes[0:4], uuid.Bytes[4:6], uuid.Bytes[6:8], uuid.Bytes[8:10], uuid.Bytes[10:16])
+}
 
 func Init() {
 	_ = migrations()
 
-	connection, err := pgx.Connect(context.Background(), os.Getenv("DB_URI"))
+	conn, err := pgx.Connect(context.Background(), os.Getenv("DB_URI"))
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Unable to connect to database: %v\n", err)
 		os.Exit(1)
 	}
-	defer connection.Close(context.Background())
+
+	Connection = conn
 
 	clientOptions := options.Client().ApplyURI(os.Getenv("MONGO_URI"))
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)

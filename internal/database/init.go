@@ -71,10 +71,6 @@ func migrations() error {
 		fmt.Println(err)
 		return err
 	}
-	if err := m.Down(); err != nil {
-		fmt.Println("DOWN")
-		fmt.Println(err)
-	}
 
 	if err := m.Up(); err != nil {
 		fmt.Println("UP")

@@ -26,6 +26,8 @@ func Init() {
 	if err != nil {
 		fmt.Println("Couldn't initiate the main job - " + err.Error())
 	}
+
+	scheduler.StartBlocking()
 }
 
 // Function that will check if need to reset job for feeds

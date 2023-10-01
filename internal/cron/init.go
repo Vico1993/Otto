@@ -6,144 +6,92 @@ import (
 	"net/url"
 	"time"
 
-	"github.com/Vico1993/Otto/internal/database"
-	"github.com/Vico1993/Otto/internal/repository"
-	"github.com/Vico1993/Otto/internal/service"
+	v2 "github.com/Vico1993/Otto/internal/repository/v2"
 	"github.com/go-co-op/gocron"
 	"github.com/mmcdole/gofeed"
 )
 
 var scheduler = gocron.NewScheduler(time.UTC)
-var telegram = service.NewTelegramService()
 var gofeedParser = gofeed.NewParser()
 
-// Initialisation of the cronjob at the start of the program
+var feedsTag = "feed"
+var mainTag = "main"
+
 func Init() {
-	_, err := scheduler.Every(1).Hour().Tag("MainJob").Do(func() {
-		mainJob()
+	_, err := scheduler.Every(1).Hour().Tag(mainTag).Do(func() {
+		// Feeds
+		checkResetFeed()
 	})
 
 	if err != nil {
 		fmt.Println("Couldn't initiate the main job - " + err.Error())
 	}
-
-	// Start executing cron blocking
-	// For now..
-	scheduler.StartBlocking()
-
-	fmt.Println("Cron ready for all chats!!")
 }
 
-// Function that will check chats to be always up to date
-func mainJob() {
-	chats := repository.Chat.GetAll()
+// Function that will check if need to reset job for feeds
+func checkResetFeed() {
+	fmt.Println("Checking Feeds")
 
-	fmt.Println("MainJob - Start")
-	// Load all chat and set each cron
-	for _, chat := range chats {
-		chat := chat
+	// Get All Feeds
+	feedsList := v2.Feed.GetAll()
 
-		jobs, err := scheduler.FindJobsByTag(chat.ChatId)
-		// No job found but we have feeds
-		// OR if we have more or less feed than before
-		if (err != nil && len(chat.Feeds) > 0) || (len(chat.Feeds) != len(jobs)) {
-			fmt.Println("MainJob - Update for : " + chat.ChatId)
-			setupCronForChat(
-				chat,
-			)
-		}
+	jobs, err := scheduler.FindJobsByTag(feedsTag)
+	// No job found but we have feeds
+	// OR if we have more or less feed than before
+	if (err != nil && len(feedsList) > 0) || (len(feedsList) != len(jobs)) {
+		fmt.Println("Need Reset Feeds")
+		feeds(feedsList)
+	} else {
+		fmt.Println("No need to reset")
 	}
-
-	fmt.Println("MainJob - End")
 }
 
-// Will setup cron job for that chat
-func setupCronForChat(chat *database.Chat) {
-	fmt.Println("Start cleaning cron for: " + chat.ChatId)
-	resetCronForChatId(chat)
+// Parsing feeds
+func feeds(feeds []*v2.DBFeed) {
+	feedsTag := "feed"
 
-	fmt.Println("Reinitilisation cron for: " + chat.ChatId)
-	startJobForChat(chat)
-
-	fmt.Println("Cron setup for: " + chat.ChatId)
-}
-
-// Delete all previous tasks in the cron link to that chat id
-func resetCronForChatId(chat *database.Chat) {
-	// Remove the previous one if any
-	err := scheduler.RemoveByTag(chat.ChatId)
+	err := scheduler.RemoveByTag(feedsTag)
 	if err != nil {
-		fmt.Println("Couldn't clean tag " + chat.ChatId + " - " + err.Error())
+		fmt.Println("FeedJob - Couldn't reset feed")
 	}
-}
 
-// Will calculate the delay between each feed, and add then to the scheduler
-func startJobForChat(chat *database.Chat) {
 	n := 1
-	for _, feed := range chat.Feeds {
+	for _, feed := range feeds {
 		// Copy val to be sure it's not overrited with the next iteration
 		feed := feed
 		url, _ := url.Parse(feed.Url)
 
 		// Start at different time to avoid parsing all feed at the same time
-		when := getDelay(len(chat.Feeds)) * n
+		when := getDelay(len(feeds)) * n
 
-		fmt.Println("Adding Job for " + chat.ChatId + " -> " + feed.Url)
+		fmt.Println("FeedJob - Adding Job -> " + feed.Url)
 		_, err := scheduler.Every(1).
 			Hour().
-			Tag(chat.ChatId).
+			Tag(feedsTag).
 			StartAt(time.Now().Add(time.Duration(when) * time.Minute)).
 			Do(func() {
-				err := job(&feed, chat)
-				if err != nil {
-					telegram.TelegramPostMessage(chat.ChatId, "Couldn't checked: *"+url.Host+"*-> _"+err.Error()+"_")
+				fmt.Println("FeedJob - Start : " + feed.Url)
+
+				parser := &parser{
+					url:  feed.Url,
+					tags: []string{},
 				}
+
+				err := parser.execute(v2.Article, feed.Id)
+
+				if err != nil {
+					fmt.Println("FeedJob - Error Parsing feed id " + feed.Id + " -> " + feed.Url + " : " + err.Error())
+				}
+
+				fmt.Println("FeedJob - End : " + feed.Url)
 			})
 
 		if err != nil {
-			fmt.Println("Couldn't initiate the cron for: " + url.Host + " - " + err.Error())
+			fmt.Println("FeedJob - Error initiate the cron for: " + url.Host + " - " + err.Error())
 		}
 
 		n += 1
 	}
-}
-
-// Job to execute
-func job(feed *database.Feed, chat *database.Chat) error {
-	fmt.Println("Start Working for : " + chat.ChatId + " - " + feed.Url)
-	parser := &parser{
-		url:  feed.Url,
-		tags: append(feed.Tags, chat.Tags...),
-	}
-
-	result, err := parser.execute(repository.Article)
-	if err != nil {
-		return err
-	}
-
-	if len(result.Articles) == 0 {
-		return nil
-	}
-
-	for _, article := range result.Articles {
-		telegram.TelegramUpdateTyping(chat.ChatId, true)
-		telegram.TelegramPostMessage(
-			chat.ChatId,
-			BuildMessage(
-				article.Title,
-				result.FeedTitle,
-				article.Author,
-				article.MatchingTags,
-				article.Link,
-			),
-		)
-		telegram.TelegramUpdateTyping(chat.ChatId, false)
-	}
-
-	// Update feed after check
-	repository.Chat.UpdateFeedCheckForUrl(feed.Url, len(result.Articles), chat.ChatId)
-
-	return nil
 }
 
 // Calculate the delay between each job base on the number of feed

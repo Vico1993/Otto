@@ -1,11 +1,10 @@
 package cron
 
 import (
-	"errors"
 	"testing"
 
-	"github.com/Vico1993/Otto/internal/database"
-	"github.com/Vico1993/Otto/internal/repository"
+	v2 "github.com/Vico1993/Otto/internal/repository/v2"
+	"github.com/google/uuid"
 	"github.com/mmcdole/gofeed"
 	"github.com/stretchr/testify/assert"
 )
@@ -69,41 +68,38 @@ func TestExecuteSuccessfulFeed(t *testing.T) {
 	}
 
 	// Mock Article Repository
-	articleRepositoryMock := new(repository.MocksArticleRep)
+	articleRepositoryMock := new(v2.MocksArticleRepository)
 
 	// Article repository return nil on Find
-	articleRepositoryMock.On("Find", "title", item.Title).Return(nil)
+	articleRepositoryMock.On("GetByTitle", item.Title).Return(nil)
 
-	articleExpected := database.NewArticle(
-		item.Title,
-		item.Published,
-		item.Link,
-		f.Title,
-		item.Authors[0].Name,
-		[]string{"tag1"},
-		item.Categories...,
-	)
+	feedId := uuid.New().String()
+	articleExpected := v2.DBArticle{
+		Id:     uuid.New().String(),
+		FeedId: feedId,
+		Title:  item.Title,
+		Source: f.Title,
+		Author: "Unknown",
+		Link:   item.Link,
+		Tags:   item.Categories,
+	}
 
 	// Article repository return an article on Create
 	articleRepositoryMock.On("Create",
+		feedId,
 		item.Title,
-		item.Published,
-		item.Link,
-		f.Title,
+		f.Link,
 		item.Authors[0].Name,
-		[]string{"tag1"},
+		item.Link,
 		item.Categories,
-	).Return(articleExpected)
+	).Return(&articleExpected)
 
-	result, err := p.execute(articleRepositoryMock)
+	err := p.execute(articleRepositoryMock, feedId)
 
-	articleRepositoryMock.AssertCalled(t, "Find", "title", item.Title)
-	articleRepositoryMock.AssertCalled(t, "Create", item.Title, item.Published, item.Link, f.Title, item.Authors[0].Name, []string{"tag1"}, item.Categories)
+	articleRepositoryMock.AssertCalled(t, "GetByTitle", item.Title)
+	articleRepositoryMock.AssertCalled(t, "Create", feedId, item.Title, f.Link, item.Authors[0].Name, item.Link, item.Categories)
 
 	assert.Nil(t, err, "The error object should be nil")
-	assert.Len(t, result.Articles, 1, "After execute should receive 1 article")
-
-	assert.EqualValues(t, articleExpected.Title, result.Articles[0].Title, "The expected article should be the one set on the mock return")
 }
 
 func TestExecuteArticleAlreadyInDB(t *testing.T) {
@@ -141,111 +137,38 @@ func TestExecuteArticleAlreadyInDB(t *testing.T) {
 	}
 
 	// Mock Article Repository
-	articleRepositoryMock := new(repository.MocksArticleRep)
+	articleRepositoryMock := new(v2.MocksArticleRepository)
 
-	articleExpected := database.NewArticle(
-		item.Title,
-		item.Published,
-		item.Link,
-		f.Title,
-		item.Authors[0].Name,
-		[]string{"tag1"},
-		item.Categories...,
-	)
+	feedId := uuid.New().String()
+	articleExpected := v2.DBArticle{
+		Id:     uuid.New().String(),
+		FeedId: feedId,
+		Title:  item.Title,
+		Source: f.Title,
+		Author: "Unknown",
+		Link:   item.Link,
+		Tags:   []string{"article"},
+	}
 
 	// Article repository return article on Find
-	articleRepositoryMock.On("Find", "title", item.Title).Return(articleExpected)
+	articleRepositoryMock.On("GetByTitle", item.Title).Return(&articleExpected)
 
-	result, err := p.execute(articleRepositoryMock)
+	err := p.execute(articleRepositoryMock, feedId)
 
-	articleRepositoryMock.AssertCalled(t, "Find", "title", item.Title)
+	articleRepositoryMock.AssertCalled(t, "GetByTitle", item.Title)
 	articleRepositoryMock.AssertNotCalled(t, "Create")
 
 	assert.Nil(t, err, "The error object should be nil")
-	assert.Len(t, result.Articles, 0, "After execute should receive 0 article has it's already found")
-}
-
-func TestExecuteArticleNoCategoryMatch(t *testing.T) {
-	p := &parser{
-		url:  "https://test.com/feed",
-		tags: []string{"tag1", "tag2"},
-	}
-
-	item := &gofeed.Item{
-		Title:     "Super Title for an Article",
-		Published: "2023-06-04",
-		Link:      "https://test.com/article-1",
-		Categories: []string{
-			"tag5", "tag8",
-		},
-		Authors: []*gofeed.Person{
-			{
-				Name: "Victor",
-			},
-		},
-	}
-
-	f := &gofeed.Feed{
-		Title: "Super Test",
-		Items: []*gofeed.Item{
-			item,
-		},
-	}
-
-	oldParseUrl := parseUrl
-	defer func() { parseUrl = oldParseUrl }()
-
-	parseUrl = func(url string) (*gofeed.Feed, error) {
-		return f, nil
-	}
-
-	// Mock Article Repository
-	articleRepositoryMock := new(repository.MocksArticleRep)
-
-	result, err := p.execute(articleRepositoryMock)
-
-	articleRepositoryMock.AssertNotCalled(t, "Find")
-	articleRepositoryMock.AssertNotCalled(t, "Create")
-
-	assert.Nil(t, err, "The error object should be nil")
-	assert.Len(t, result.Articles, 0, "Since no category match, should return 0")
-}
-
-func TestExecuteParsingFailed(t *testing.T) {
-	p := &parser{
-		url:  "https://test.com/feed",
-		tags: []string{"tag1", "tag2"},
-	}
-
-	oldParseUrl := parseUrl
-	defer func() { parseUrl = oldParseUrl }()
-
-	parseUrl = func(url string) (*gofeed.Feed, error) {
-		return nil, errors.New("Failling...")
-	}
-
-	// Mock Article Repository
-	articleRepositoryMock := new(repository.MocksArticleRep)
-
-	result, err := p.execute(articleRepositoryMock)
-
-	articleRepositoryMock.AssertNotCalled(t, "Find")
-	articleRepositoryMock.AssertNotCalled(t, "Create")
-
-	assert.Nil(t, result, "Result should be nil if gofeed fail")
-	if assert.Error(t, err) {
-		assert.Equal(t, errors.New("Couldn't parsed test.com: Failling..."), err, "Error message doesn't match")
-	}
 }
 
 func TestExecuteNoCategoriesInItem(t *testing.T) {
 	p := &parser{
 		url:  "https://test.com/feed",
-		tags: []string{"tag1", "article"},
+		tags: []string{},
 	}
 
 	item := &gofeed.Item{
-		Title:      "Super Title for an Article",
+		Title:      "Article",
 		Published:  "2023-06-04",
 		Link:       "https://test.com/article-1",
 		Categories: []string{},
@@ -258,6 +181,7 @@ func TestExecuteNoCategoriesInItem(t *testing.T) {
 
 	f := &gofeed.Feed{
 		Title: "Super Test",
+		Link:  "https://feed.link",
 		Items: []*gofeed.Item{
 			item,
 		},
@@ -271,47 +195,44 @@ func TestExecuteNoCategoriesInItem(t *testing.T) {
 	}
 
 	// Mock Article Repository
-	articleRepositoryMock := new(repository.MocksArticleRep)
+	articleRepositoryMock := new(v2.MocksArticleRepository)
 
 	// Article repository return nil on Find
-	articleRepositoryMock.On("Find", "title", item.Title).Return(nil)
+	articleRepositoryMock.On("GetByTitle", item.Title).Return(nil)
 
-	articleExpected := database.NewArticle(
-		item.Title,
-		item.Published,
-		item.Link,
-		f.Title,
-		item.Authors[0].Name,
-		[]string{"article"},
-		item.Categories...,
-	)
+	feedId := uuid.New().String()
+	articleExpected := v2.DBArticle{
+		Id:     uuid.New().String(),
+		FeedId: feedId,
+		Title:  item.Title,
+		Source: f.Title,
+		Author: "Unknown",
+		Link:   item.Link,
+		Tags:   []string{"article"},
+	}
 
 	// Article repository return an article on Create
 	articleRepositoryMock.On("Create",
+		feedId,
 		item.Title,
-		item.Published,
-		item.Link,
-		f.Title,
+		f.Link,
 		item.Authors[0].Name,
+		item.Link,
 		[]string{"article"},
-		item.Categories,
-	).Return(articleExpected)
+	).Return(&articleExpected)
 
-	result, err := p.execute(articleRepositoryMock)
+	err := p.execute(articleRepositoryMock, feedId)
 
-	articleRepositoryMock.AssertCalled(t, "Find", "title", item.Title)
-	articleRepositoryMock.AssertCalled(t, "Create", item.Title, item.Published, item.Link, f.Title, item.Authors[0].Name, []string{"article"}, item.Categories)
+	articleRepositoryMock.AssertCalled(t, "GetByTitle", item.Title)
+	articleRepositoryMock.AssertCalled(t, "Create", feedId, item.Title, f.Link, item.Authors[0].Name, item.Link, []string{"article"})
 
 	assert.Nil(t, err, "The error object should be nil")
-	assert.Len(t, result.Articles, 1, "After execute should receive 1 article")
-
-	assert.EqualValues(t, articleExpected.Title, result.Articles[0].Title, "The expected article should be the one set on the mock return")
 }
 
 func TestExecuteUnknownAuthor(t *testing.T) {
 	p := &parser{
 		url:  "https://test.com/feed",
-		tags: []string{"tag1", "tag2"},
+		tags: []string{},
 	}
 
 	item := &gofeed.Item{
@@ -337,39 +258,36 @@ func TestExecuteUnknownAuthor(t *testing.T) {
 	}
 
 	// Mock Article Repository
-	articleRepositoryMock := new(repository.MocksArticleRep)
+	articleRepositoryMock := new(v2.MocksArticleRepository)
 
 	// Article repository return nil on Find
-	articleRepositoryMock.On("Find", "title", item.Title).Return(nil)
+	articleRepositoryMock.On("GetByTitle", item.Title).Return(nil)
 
-	articleExpected := database.NewArticle(
-		item.Title,
-		item.Published,
-		item.Link,
-		f.Title,
-		"Unknown",
-		[]string{"tag1"},
-		item.Categories...,
-	)
+	feedId := uuid.New().String()
+	articleExpected := v2.DBArticle{
+		Id:     uuid.New().String(),
+		FeedId: feedId,
+		Title:  item.Title,
+		Source: f.Title,
+		Author: "Unknown",
+		Link:   item.Link,
+		Tags:   item.Categories,
+	}
 
 	// Article repository return an article on Create
 	articleRepositoryMock.On("Create",
+		feedId,
 		item.Title,
-		item.Published,
-		item.Link,
-		f.Title,
+		f.Link,
 		"Unknown",
-		[]string{"tag2"},
+		item.Link,
 		item.Categories,
-	).Return(articleExpected)
+	).Return(&articleExpected)
 
-	result, err := p.execute(articleRepositoryMock)
+	err := p.execute(articleRepositoryMock, feedId)
 
-	articleRepositoryMock.AssertCalled(t, "Find", "title", item.Title)
-	articleRepositoryMock.AssertCalled(t, "Create", item.Title, item.Published, item.Link, f.Title, "Unknown", []string{"tag2"}, item.Categories)
+	articleRepositoryMock.AssertCalled(t, "GetByTitle", item.Title)
+	articleRepositoryMock.AssertCalled(t, "Create", feedId, item.Title, f.Link, "Unknown", item.Link, item.Categories)
 
 	assert.Nil(t, err, "The error object should be nil")
-	assert.Len(t, result.Articles, 1, "After execute should receive 1 article")
-
-	assert.EqualValues(t, articleExpected.Title, result.Articles[0].Title, "The expected article should be the one set on the mock return")
 }

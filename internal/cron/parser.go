@@ -6,8 +6,7 @@ import (
 	"strings"
 
 	textrank "github.com/DavidBelicza/TextRank/v2"
-	"github.com/Vico1993/Otto/internal/database"
-	"github.com/Vico1993/Otto/internal/repository"
+	v2 "github.com/Vico1993/Otto/internal/repository/v2"
 	"github.com/Vico1993/Otto/internal/utils"
 	"github.com/mmcdole/gofeed"
 )
@@ -31,39 +30,26 @@ type parser struct {
 	tags []string
 }
 
-type parseResult struct {
-	FeedTitle string
-	Articles  []*database.Article
-}
-
 // Parse an url to retrieve a list of articles matching the list of tags
 // Will return an error OR the list of article found
-func (p *parser) execute(articleRepository repository.IArticleRepository) (*parseResult, error) {
+func (p *parser) execute(articleRepository v2.IArticleRepository, feedId string) error {
 	url, _ := url.Parse(p.url)
 
 	feed, err := parseUrl(p.url)
 	if err != nil {
-		return nil, errors.New("Couldn't parsed " + url.Host + ": " + err.Error())
+		return errors.New("Couldn't parsed " + url.Host + ": " + err.Error())
 	}
 
-	articles := []*database.Article{}
 	for _, item := range feed.Items {
 		item := item
 
-		tagsFromTitle := []string{}
-		if len(item.Categories) == 0 {
-			tagsFromTitle = p.findTagFromTitle(item.Title)
-		}
-
-		// If the category doesn't match with the interest tags
-		// If item doesn't have any categories
-		match := p.isCategoriesAndTagsMatch(append(item.Categories, tagsFromTitle...))
-		if len(match) == 0 {
-			continue
+		itemTags := item.Categories
+		if len(itemTags) == 0 {
+			itemTags = p.findTagFromTitle(item.Title)
 		}
 
 		// Looking into the DB to find if it's a new article...
-		articleFound := articleRepository.Find("title", item.Title)
+		articleFound := articleRepository.GetByTitle(item.Title)
 		if articleFound != nil {
 			continue
 		}
@@ -73,23 +59,17 @@ func (p *parser) execute(articleRepository repository.IArticleRepository) (*pars
 			author = item.Authors[0].Name
 		}
 
-		articles = append(articles,
-			articleRepository.Create(
-				item.Title,
-				item.Published,
-				item.Link,
-				feed.Title,
-				author,
-				match,
-				item.Categories...,
-			),
+		articleRepository.Create(
+			feedId,
+			item.Title,
+			feed.Link,
+			author,
+			item.Link,
+			itemTags,
 		)
 	}
 
-	return &parseResult{
-		FeedTitle: feed.Title,
-		Articles:  articles,
-	}, nil
+	return nil
 }
 
 // find if a list of categories is in tags

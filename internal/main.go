@@ -7,7 +7,7 @@ import (
 
 	"github.com/Vico1993/Otto/internal/cron"
 	"github.com/Vico1993/Otto/internal/database"
-	"github.com/Vico1993/Otto/internal/repository"
+	v2 "github.com/Vico1993/Otto/internal/repository/v2"
 	"github.com/Vico1993/Otto/internal/service"
 )
 
@@ -19,7 +19,23 @@ func main() {
 	database.Init()
 
 	// Load repository
-	repository.Init()
+	v2.Init()
+
+	// r := gin.Default()
+
+	// // Error Middleware
+	// r.Use(middlewares.Error())
+
+	// // Init routes
+	// routes.Init(r)
+
+	// err := r.Run()
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
+
+	// Load repository
+	// repository.Init()
 
 	service.NewTelegramService().TelegramPostMessage(
 		os.Getenv("TELEGRAM_USER_CHAT_ID"),

@@ -9,9 +9,10 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
+	"github.com/stretchr/testify/mock"
 )
 
-type dbFeed struct {
+type DBFeed struct {
 	Id        string    `db:"id"`
 	Url       string    `db:"url"`
 	CreatedAt time.Time `db:"created_at"`
@@ -23,8 +24,8 @@ func NewFeed(
 	url string,
 	createdAt time.Time,
 	updatedAt time.Time,
-) *dbFeed {
-	return &dbFeed{
+) *DBFeed {
+	return &DBFeed{
 		Id:        database.TransformUUIDToString(uuid),
 		Url:       url,
 		CreatedAt: createdAt,
@@ -33,17 +34,17 @@ func NewFeed(
 }
 
 type IFeedRepository interface {
-	GetAll() []*dbFeed
-	GetOne(uuid string) *dbFeed
-	Create(url string) *dbFeed
+	GetAll() []*DBFeed
+	GetOne(uuid string) *DBFeed
+	Create(url string) *DBFeed
 	Delete(uuid string) bool
 }
 
 type SFeedRepository struct{}
 
 // Return all Feeds in the DB
-func (rep *SFeedRepository) GetAll() []*dbFeed {
-	var feeds []*dbFeed
+func (rep *SFeedRepository) GetAll() []*DBFeed {
+	var feeds []*DBFeed
 
 	q := `SELECT id, url, created_at, updated_at FROM feeds`
 	rows, err := database.Connection.Query(context.Background(), q)
@@ -79,7 +80,7 @@ func (rep *SFeedRepository) GetAll() []*dbFeed {
 }
 
 // Return one feed, nil if not found
-func (rep *SFeedRepository) GetOne(uuid string) *dbFeed {
+func (rep *SFeedRepository) GetOne(uuid string) *DBFeed {
 	q := `SELECT id, url, created_at, updated_at FROM feeds where id=$1`
 
 	var id pgtype.UUID
@@ -111,7 +112,7 @@ func (rep *SFeedRepository) GetOne(uuid string) *dbFeed {
 }
 
 // Create one feed
-func (rep *SFeedRepository) Create(url string) *dbFeed {
+func (rep *SFeedRepository) Create(url string) *DBFeed {
 	q := `INSERT INTO feeds (id, url) VALUES ($1, $2);`
 
 	newId := uuid.New().String()
@@ -146,4 +147,33 @@ func (rep *SFeedRepository) Delete(uuid string) bool {
 	}
 
 	return isDelete
+}
+
+type MocksFeedRepository struct {
+	mock.Mock
+}
+
+func (m *MocksFeedRepository) Create(url string) *DBFeed {
+	args := m.Called(url)
+	return args.Get(0).(*DBFeed)
+}
+
+func (m *MocksFeedRepository) Delete(uuid string) bool {
+	args := m.Called(uuid)
+	return args.Get(0).(bool)
+}
+
+func (m *MocksFeedRepository) GetOne(uuid string) *DBFeed {
+	args := m.Called(uuid)
+
+	if args.Get(0) == nil {
+		return nil
+	}
+
+	return args.Get(0).(*DBFeed)
+}
+
+func (m *MocksFeedRepository) GetAll() []*DBFeed {
+	args := m.Called()
+	return args.Get(0).([]*DBFeed)
 }

@@ -10,6 +10,7 @@ CREATE TABLE IF NOT EXISTS articles (
     "feed_id" uuid NOT NULL,
     "title" text NOT NULL,
     "source" text NOT NULL,
+    "author" text,
     "link" text NOT NULL,
     "tags" text[] NOT NULL,
     "created_at" timestamp NOT NULL DEFAULT now(),
@@ -27,7 +28,7 @@ CREATE TABLE IF NOT EXISTS chats (
 );
 
 CREATE TABLE IF NOT EXISTS chat_feed (
-    "id" uuid NOT NULL PRIMARY KEY,
+    "id" SERIAL NOT NULL PRIMARY KEY,
     "chat_id" uuid NOT NULL,
     "feed_id" uuid NOT NULL,
     "created_at" timestamp NOT NULL DEFAULT now(),
@@ -37,7 +38,7 @@ CREATE TABLE IF NOT EXISTS chat_feed (
 );
 
 CREATE TABLE IF NOT EXISTS chat_article (
-    "id" uuid NOT NULL PRIMARY KEY,
+    "id" SERIAL NOT NULL PRIMARY KEY,
     "chat_id" uuid NOT NULL,
     "article_id" uuid NOT NULL,
     "created_at" timestamp NOT NULL DEFAULT now(),

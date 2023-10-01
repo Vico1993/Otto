@@ -7,7 +7,7 @@ on:
 env:
     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-    RAILWAY_SERVICE: API
+    RAILWAY_SERVICE: Otto
 
 jobs:
     goreleaser:

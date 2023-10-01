@@ -1,15 +1,14 @@
 package main
 
 import (
-	"log"
+	"os"
 
-	"github.com/gin-gonic/gin"
 	"github.com/subosito/gotenv"
 
+	"github.com/Vico1993/Otto/internal/cron"
 	"github.com/Vico1993/Otto/internal/database"
-	"github.com/Vico1993/Otto/internal/middlewares"
 	v2 "github.com/Vico1993/Otto/internal/repository/v2"
-	"github.com/Vico1993/Otto/internal/routes"
+	"github.com/Vico1993/Otto/internal/service"
 )
 
 func main() {
@@ -22,27 +21,27 @@ func main() {
 	// Load repository
 	v2.Init()
 
-	r := gin.Default()
+	// r := gin.Default()
 
-	// Error Middleware
-	r.Use(middlewares.Error())
+	// // Error Middleware
+	// r.Use(middlewares.Error())
 
-	// Init routes
-	routes.Init(r)
+	// // Init routes
+	// routes.Init(r)
 
-	err := r.Run()
-	if err != nil {
-		log.Fatal(err)
-	}
+	// err := r.Run()
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
 
 	// Load repository
 	// repository.Init()
 
-	// service.NewTelegramService().TelegramPostMessage(
-	// 	os.Getenv("TELEGRAM_USER_CHAT_ID"),
-	// 	`*Upgrade complete*! Ready to be even smarter and funnier than before. 🤖 🚀 ✨`,
-	// )
+	service.NewTelegramService().TelegramPostMessage(
+		os.Getenv("TELEGRAM_USER_CHAT_ID"),
+		`*Upgrade complete*! Ready to be even smarter and funnier than before. 🤖 🚀 ✨`,
+	)
 
 	// Initialisation of the cron
-	// cron.Init()
+	cron.Init()
 }

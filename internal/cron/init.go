@@ -11,14 +11,14 @@ import (
 	"github.com/mmcdole/gofeed"
 )
 
-var scheduler = gocron.NewScheduler(time.UTC)
+var Scheduler = gocron.NewScheduler(time.UTC)
 var gofeedParser = gofeed.NewParser()
 
 var feedsTag = "feed"
 var mainTag = "main"
 
 func Init() {
-	_, err := scheduler.Every(1).Hour().Tag(mainTag).Do(func() {
+	_, err := Scheduler.Every(1).Hour().Tag(mainTag).Do(func() {
 		// Feeds
 		checkResetFeed()
 	})
@@ -26,8 +26,6 @@ func Init() {
 	if err != nil {
 		fmt.Println("Couldn't initiate the main job - " + err.Error())
 	}
-
-	scheduler.StartBlocking()
 }
 
 // Function that will check if need to reset job for feeds
@@ -37,7 +35,7 @@ func checkResetFeed() {
 	// Get All Feeds
 	feedsList := v2.Feed.GetAll()
 
-	jobs, err := scheduler.FindJobsByTag(feedsTag)
+	jobs, err := Scheduler.FindJobsByTag(feedsTag)
 	// No job found but we have feeds
 	// OR if we have more or less feed than before
 	if (err != nil && len(feedsList) > 0) || (len(feedsList) != len(jobs)) {
@@ -52,7 +50,7 @@ func checkResetFeed() {
 func feeds(feeds []*v2.DBFeed) {
 	feedsTag := "feed"
 
-	err := scheduler.RemoveByTag(feedsTag)
+	err := Scheduler.RemoveByTag(feedsTag)
 	if err != nil {
 		fmt.Println("FeedJob - Couldn't reset feed")
 	}
@@ -67,7 +65,7 @@ func feeds(feeds []*v2.DBFeed) {
 		when := getDelay(len(feeds)) * n
 
 		fmt.Println("FeedJob - Adding Job -> " + feed.Url)
-		_, err := scheduler.Every(1).
+		_, err := Scheduler.Every(1).
 			Hour().
 			Tag(feedsTag).
 			StartAt(time.Now().Add(time.Duration(when) * time.Minute)).

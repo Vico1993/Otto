@@ -21,18 +21,18 @@ func TestDelayWith20Element(t *testing.T) {
 }
 
 func TestInit(t *testing.T) {
-	jobs := scheduler.Jobs()
+	jobs := Scheduler.Jobs()
 	assert.Len(t, jobs, 0, "Should have 0 job in the queue at start")
 
 	Init()
 
-	jobs = scheduler.Jobs()
-	tags := scheduler.GetAllTags()
+	jobs = Scheduler.Jobs()
+	tags := Scheduler.GetAllTags()
 	assert.Len(t, tags, 1, "Should have 1 tags from jobs in the queue at the end")
 	assert.Len(t, jobs, 1, "Should have 1 job in the queue at the end")
 
 	// Reset jobs
-	_ = scheduler.RemoveByTag(mainTag)
+	_ = Scheduler.RemoveByTag(mainTag)
 }
 
 func TestCheckResetFeedNoFeedsInDB(t *testing.T) {
@@ -44,8 +44,8 @@ func TestCheckResetFeedNoFeedsInDB(t *testing.T) {
 
 	checkResetFeed()
 
-	jobs, _ := scheduler.FindJobsByTag(feedsTag)
-	tags := scheduler.GetAllTags()
+	jobs, _ := Scheduler.FindJobsByTag(feedsTag)
+	tags := Scheduler.GetAllTags()
 
 	assert.Len(t, tags, 0)
 	feedRepositoryMock.AssertCalled(t, "GetAll")
@@ -53,7 +53,7 @@ func TestCheckResetFeedNoFeedsInDB(t *testing.T) {
 }
 
 func TestCheckResetSameNumberOfFeed(t *testing.T) {
-	_, _ = scheduler.Every(1).Tag(feedsTag).Week().Do(func() {
+	_, _ = Scheduler.Every(1).Tag(feedsTag).Week().Do(func() {
 		fmt.Println("Test job")
 	})
 
@@ -68,24 +68,24 @@ func TestCheckResetSameNumberOfFeed(t *testing.T) {
 
 	feedRepositoryMock.On("GetAll").Return([]*v2.DBFeed{&feed})
 
-	jobs, _ := scheduler.FindJobsByTag(feedsTag)
+	jobs, _ := Scheduler.FindJobsByTag(feedsTag)
 	assert.Len(t, jobs, 1, "Should have 1 job in the queue at start")
 
 	checkResetFeed()
 
-	jobs, _ = scheduler.FindJobsByTag(feedsTag)
-	tags := scheduler.GetAllTags()
+	jobs, _ = Scheduler.FindJobsByTag(feedsTag)
+	tags := Scheduler.GetAllTags()
 
 	assert.Len(t, tags, 1)
 	feedRepositoryMock.AssertCalled(t, "GetAll")
 	assert.Len(t, jobs, 1, "Should have 1 job in the queue after call")
 
 	// Reset jobs
-	_ = scheduler.RemoveByTag(feedsTag)
+	_ = Scheduler.RemoveByTag(feedsTag)
 }
 
 func TestCheckResetAddJob(t *testing.T) {
-	_, _ = scheduler.Every(1).Tag(feedsTag).Week().Do(func() {
+	_, _ = Scheduler.Every(1).Tag(feedsTag).Week().Do(func() {
 		fmt.Println("Test job")
 	})
 
@@ -104,13 +104,13 @@ func TestCheckResetAddJob(t *testing.T) {
 
 	feedRepositoryMock.On("GetAll").Return([]*v2.DBFeed{&feed1, &feed2})
 
-	jobs, _ := scheduler.FindJobsByTag(feedsTag)
+	jobs, _ := Scheduler.FindJobsByTag(feedsTag)
 	assert.Len(t, jobs, 1, "Should have 1 job in the queue at start")
 
 	checkResetFeed()
 
-	jobs, _ = scheduler.FindJobsByTag(feedsTag)
-	tags := scheduler.GetAllTags()
+	jobs, _ = Scheduler.FindJobsByTag(feedsTag)
+	tags := Scheduler.GetAllTags()
 
 	assert.Len(t, tags, 2)
 	assert.Equal(t, []string{"feed", "feed"}, tags, "Should have 2 tags call feeds")
@@ -118,5 +118,5 @@ func TestCheckResetAddJob(t *testing.T) {
 	assert.Len(t, jobs, 2, "Should have 2 job in the queue after call")
 
 	// Reset jobs
-	_ = scheduler.RemoveByTag(feedsTag)
+	_ = Scheduler.RemoveByTag(feedsTag)
 }

@@ -44,4 +44,8 @@ func main() {
 
 	// Initialisation of the cron
 	cron.Init()
+
+	// Start cron exec
+	// Blocking for now
+	cron.Scheduler.StartBlocking()
 }

@@ -7,7 +7,7 @@ import (
 
 	"github.com/Vico1993/Otto/internal/cron"
 	"github.com/Vico1993/Otto/internal/database"
-	v2 "github.com/Vico1993/Otto/internal/repository/v2"
+	"github.com/Vico1993/Otto/internal/repository"
 	"github.com/Vico1993/Otto/internal/service"
 )
 
@@ -19,7 +19,7 @@ func main() {
 	database.Init()
 
 	// Load repository
-	v2.Init()
+	repository.Init()
 
 	// r := gin.Default()
 

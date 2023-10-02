@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	v2 "github.com/Vico1993/Otto/internal/repository/v2"
+	"github.com/Vico1993/Otto/internal/repository"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -36,11 +36,11 @@ func TestInit(t *testing.T) {
 }
 
 func TestCheckResetFeedNoFeedsInDB(t *testing.T) {
-	feedRepositoryMock := new(v2.MocksFeedRepository)
+	feedRepositoryMock := new(repository.MocksFeedRepository)
 
-	v2.Feed = feedRepositoryMock
+	repository.Feed = feedRepositoryMock
 
-	feedRepositoryMock.On("GetAll").Return([]*v2.DBFeed{})
+	feedRepositoryMock.On("GetAll").Return([]*repository.DBFeed{})
 
 	checkResetFeed()
 
@@ -57,16 +57,16 @@ func TestCheckResetSameNumberOfFeed(t *testing.T) {
 		fmt.Println("Test job")
 	})
 
-	feedRepositoryMock := new(v2.MocksFeedRepository)
+	feedRepositoryMock := new(repository.MocksFeedRepository)
 
-	v2.Feed = feedRepositoryMock
+	repository.Feed = feedRepositoryMock
 
-	feed := v2.DBFeed{
+	feed := repository.DBFeed{
 		Id:  "1234",
 		Url: "https://google.com",
 	}
 
-	feedRepositoryMock.On("GetAll").Return([]*v2.DBFeed{&feed})
+	feedRepositoryMock.On("GetAll").Return([]*repository.DBFeed{&feed})
 
 	jobs, _ := Scheduler.FindJobsByTag(feedsTag)
 	assert.Len(t, jobs, 1, "Should have 1 job in the queue at start")
@@ -89,20 +89,20 @@ func TestCheckResetAddJob(t *testing.T) {
 		fmt.Println("Test job")
 	})
 
-	feedRepositoryMock := new(v2.MocksFeedRepository)
+	feedRepositoryMock := new(repository.MocksFeedRepository)
 
-	v2.Feed = feedRepositoryMock
+	repository.Feed = feedRepositoryMock
 
-	feed1 := v2.DBFeed{
+	feed1 := repository.DBFeed{
 		Id:  "1234",
 		Url: "https://google1.com",
 	}
-	feed2 := v2.DBFeed{
+	feed2 := repository.DBFeed{
 		Id:  "5678",
 		Url: "https://google2.com",
 	}
 
-	feedRepositoryMock.On("GetAll").Return([]*v2.DBFeed{&feed1, &feed2})
+	feedRepositoryMock.On("GetAll").Return([]*repository.DBFeed{&feed1, &feed2})
 
 	jobs, _ := Scheduler.FindJobsByTag(feedsTag)
 	assert.Len(t, jobs, 1, "Should have 1 job in the queue at start")

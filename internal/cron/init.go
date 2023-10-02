@@ -6,7 +6,7 @@ import (
 	"net/url"
 	"time"
 
-	v2 "github.com/Vico1993/Otto/internal/repository/v2"
+	v2 "github.com/Vico1993/Otto/internal/repository"
 	"github.com/go-co-op/gocron"
 	"github.com/mmcdole/gofeed"
 )

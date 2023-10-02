@@ -1,15 +1,17 @@
 package repository
 
-import (
-	"fmt"
+import "fmt"
+
+var (
+	Chat    IChatRepository
+	Feed    IFeedRepository
+	Article IArticleRepository
 )
 
-var Chat IChatRepository
-var Article IArticleRepository
-
 func Init() {
-	Chat = newChatRepository()
-	Article = newArticleRepository()
+	Chat = &SChatRepository{}
+	Feed = &SFeedRepository{}
+	Article = &SArticleRepository{}
 
 	fmt.Println("Repository Initiated")
 }

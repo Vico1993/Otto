@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	textrank "github.com/DavidBelicza/TextRank/v2"
-	v2 "github.com/Vico1993/Otto/internal/repository/v2"
+	"github.com/Vico1993/Otto/internal/repository"
 	"github.com/Vico1993/Otto/internal/utils"
 	"github.com/mmcdole/gofeed"
 )
@@ -32,7 +32,7 @@ type parser struct {
 
 // Parse an url to retrieve a list of articles matching the list of tags
 // Will return an error OR the list of article found
-func (p *parser) execute(articleRepository v2.IArticleRepository, feedId string) error {
+func (p *parser) execute(articleRepository repository.IArticleRepository, feedId string) error {
 	url, _ := url.Parse(p.url)
 
 	feed, err := parseUrl(p.url)

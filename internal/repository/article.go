@@ -146,6 +146,7 @@ func (rep *SArticleRepository) GetOne(uuid string) *DBArticle {
 
 	// if null throw an error
 	if err != nil {
+		fmt.Println(err.Error())
 		return nil
 	}
 

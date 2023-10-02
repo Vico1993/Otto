@@ -13,7 +13,7 @@ import (
 	"github.com/lib/pq"
 )
 
-type dbChat struct {
+type DBChat struct {
 	Id             string    `db:"id"`
 	TelegramChatId string    `db:"telegram_chat_id"`
 	TelegramUserId *string   `db:"telegram_user_id, omitempty"`
@@ -29,14 +29,14 @@ func NewChat(
 	tags []string,
 	createdAt time.Time,
 	updatedAt time.Time,
-) *dbChat {
+) *DBChat {
 
 	var trimedTags []string
 	for _, tag := range tags {
 		trimedTags = append(trimedTags, strings.TrimSpace(tag))
 	}
 
-	return &dbChat{
+	return &DBChat{
 		Id:             database.TransformUUIDToString(uuid),
 		TelegramChatId: telegramChatId,
 		TelegramUserId: telegramUserId,
@@ -47,17 +47,18 @@ func NewChat(
 }
 
 type IChatRepository interface {
-	GetAll() []*dbChat
-	GetOne(uuid string) *dbChat
-	Create(telegramChatId string, telegramUserId *string, tags []string) *dbChat
+	GetAll() []*DBChat
+	GetOne(uuid string) *DBChat
+	Create(telegramChatId string, telegramUserId *string, tags []string) *DBChat
 	Delete(uuid string) bool
+	UpdateTags(uuid string, tags []string) bool
 }
 
 type SChatRepository struct{}
 
 // Return all Chats in the DB
-func (rep *SChatRepository) GetAll() []*dbChat {
-	var chats []*dbChat
+func (rep *SChatRepository) GetAll() []*DBChat {
+	var chats []*DBChat
 
 	q := `SELECT id, telegram_chat_id, telegram_user_id, tags, created_at, updated_at FROM chats`
 	rows, err := database.Connection.Query(context.Background(), q)
@@ -98,7 +99,7 @@ func (rep *SChatRepository) GetAll() []*dbChat {
 }
 
 // Return one chat, nil if not found
-func (rep *SChatRepository) GetOne(uuid string) *dbChat {
+func (rep *SChatRepository) GetOne(uuid string) *DBChat {
 	q := `SELECT id, telegram_chat_id, telegram_user_id, tags, created_at, updated_at FROM chats where id=$1`
 
 	var id pgtype.UUID
@@ -136,7 +137,7 @@ func (rep *SChatRepository) GetOne(uuid string) *dbChat {
 }
 
 // Create one chat
-func (rep *SChatRepository) Create(telegramChatId string, telegramUserId *string, tags []string) *dbChat {
+func (rep *SChatRepository) Create(telegramChatId string, telegramUserId *string, tags []string) *DBChat {
 	q := `INSERT INTO chats (id, telegram_chat_id, telegram_user_id, tags) VALUES ($1, $2, $3, $4);`
 
 	newId := uuid.New().String()
@@ -173,4 +174,26 @@ func (rep *SChatRepository) Delete(uuid string) bool {
 	}
 
 	return isDelete
+}
+
+// Appends tags to chat
+func (rep *SChatRepository) UpdateTags(uuid string, tags []string) bool {
+	q := `UPDATE chats SET tags=$1 WHERE id=$2;`
+
+	res, err := database.Connection.Exec(
+		context.Background(),
+		q,
+		pq.Array(tags),
+		uuid,
+	)
+	if err != nil {
+		fmt.Println("Couldn't create")
+		fmt.Println(err)
+	}
+
+	if res.RowsAffected() == 1 {
+		return true
+	}
+
+	return false
 }

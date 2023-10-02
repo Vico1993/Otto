@@ -2,11 +2,10 @@ package utils
 
 import (
 	"encoding/json"
-	"fmt"
 )
 
 // Output interface in a pretty json in terminal
-func ToJson(i interface{}) {
+func ToJson(i interface{}) string {
 	bytes, _ := json.MarshalIndent(i, "", "    ")
-	fmt.Println(string(bytes))
+	return string(bytes)
 }

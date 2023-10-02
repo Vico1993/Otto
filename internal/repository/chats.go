@@ -3,166 +3,174 @@ package repository
 import (
 	"context"
 	"fmt"
-	"log"
+	"strings"
 	"time"
 
 	"github.com/Vico1993/Otto/internal/database"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo/options"
+	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgtype"
+	"github.com/lib/pq"
 )
 
+type dbChat struct {
+	Id             string    `db:"id"`
+	TelegramChatId string    `db:"telegram_chat_id"`
+	TelegramUserId *string   `db:"telegram_user_id, omitempty"`
+	Tags           []string  `db:"tags"`
+	CreatedAt      time.Time `db:"created_at"`
+	UpdatedAt      time.Time `db:"updated_at"`
+}
+
+func NewChat(
+	uuid pgtype.UUID,
+	telegramChatId string,
+	telegramUserId *string,
+	tags []string,
+	createdAt time.Time,
+	updatedAt time.Time,
+) *dbChat {
+
+	var trimedTags []string
+	for _, tag := range tags {
+		trimedTags = append(trimedTags, strings.TrimSpace(tag))
+	}
+
+	return &dbChat{
+		Id:             database.TransformUUIDToString(uuid),
+		TelegramChatId: telegramChatId,
+		TelegramUserId: telegramUserId,
+		Tags:           trimedTags,
+		CreatedAt:      createdAt,
+		UpdatedAt:      updatedAt,
+	}
+}
+
 type IChatRepository interface {
-	GetAll() []*database.Chat
-	FindByChatId(chatId string) *database.Chat
-	UpdateFeedCheckForUrl(url string, articleFound int, chatId string) bool
-	PushNewFeed(url string, chatId string) bool
-	Create(chatid string, userid int64, tags []string, feeds []string) *database.Chat
+	GetAll() []*dbChat
+	GetOne(uuid string) *dbChat
+	Create(telegramChatId string, telegramUserId *string, tags []string) *dbChat
+	Delete(uuid string) bool
 }
 
-type sChatRep struct{}
+type SChatRepository struct{}
 
-// Initiate the Chat Repository
-func newChatRepository() IChatRepository {
-	return &sChatRep{}
-}
+// Return all Chats in the DB
+func (rep *SChatRepository) GetAll() []*dbChat {
+	var chats []*dbChat
 
-// Retrieve all Chat from the DB
-func (r sChatRep) GetAll() []*database.Chat {
-	var chats []*database.Chat
+	q := `SELECT id, telegram_chat_id, telegram_user_id, tags, created_at, updated_at FROM chats`
+	rows, err := database.Connection.Query(context.Background(), q)
 
-	cur, err := database.ChatCollection.Find(context.Background(), bson.D{})
 	if err != nil {
-		fmt.Println(err.Error())
-		return nil
+		fmt.Println("Error Query Execute", err.Error())
 	}
 
-	defer cur.Close(context.Background())
+	var id pgtype.UUID
+	var telegramChatId string
+	var telegramUserId *string
+	var tags []string
+	var createdAt time.Time
+	var updatedAt time.Time
+	params := []any{&id, &telegramChatId, &telegramUserId, &tags, &createdAt, &updatedAt}
+	_, err = pgx.ForEachRow(rows, params, func() error {
 
-	// Decod each element found
-	for cur.Next(context.Background()) {
-		var result database.Chat
-		err := cur.Decode(&result)
-		if err != nil {
-			log.Fatal(err)
-		}
-		chats = append(chats, &result)
-	}
+		chats = append(
+			chats,
+			NewChat(
+				id,
+				telegramChatId,
+				telegramUserId,
+				tags,
+				createdAt,
+				updatedAt,
+			),
+		)
 
-	if err := cur.Err(); err != nil {
-		fmt.Println("Error while parsing")
-		fmt.Println(err.Error())
 		return nil
+	})
+
+	if err != nil {
+		fmt.Println("Error ForEach", err.Error())
 	}
 
 	return chats
 }
 
-// Find feed by ChatId
-func (r sChatRep) FindByChatId(chatId string) *database.Chat {
-	var chat database.Chat
+// Return one chat, nil if not found
+func (rep *SChatRepository) GetOne(uuid string) *dbChat {
+	q := `SELECT id, telegram_chat_id, telegram_user_id, tags, created_at, updated_at FROM chats where id=$1`
 
-	err := database.ChatCollection.FindOne(context.TODO(), bson.D{{
-		Key:   "chatid",
-		Value: chatId,
-	}}).Decode(&chat)
-
-	if err != nil {
-		fmt.Println(err.Error())
-		return nil
-	}
-
-	return &chat
-}
-
-// Update LastTimeChecked with the current time for a key url / chatId
-func (r sChatRep) UpdateFeedCheckForUrl(
-	url string,
-	articleFound int,
-	chatId string,
-) bool {
-	_, err := database.ChatCollection.UpdateOne(
-		context.TODO(),
-		bson.D{{
-			Key:   "chatid",
-			Value: chatId,
-		}},
-		bson.D{{Key: "$set", Value: bson.M{
-			"feeds.$[e].lasttimeparsed": time.Now(),
-		}}, {
-			Key: "$inc",
-			Value: bson.M{
-				"feeds.$[e].articlefound": articleFound,
-			},
-		}},
-		options.Update().SetArrayFilters(
-			options.ArrayFilters{
-				Filters: []interface{}{
-					bson.D{{
-						Key:   "e.url",
-						Value: url,
-					}},
-				},
-			},
-		),
+	var id pgtype.UUID
+	var telegramChatId string
+	var telegramUserId *string
+	var tags []string
+	var createdAt time.Time
+	var updatedAt time.Time
+	err := database.Connection.QueryRow(
+		context.Background(),
+		q,
+		uuid,
+	).Scan(
+		&id,
+		&telegramChatId,
+		&telegramUserId,
+		&tags,
+		&createdAt,
+		&updatedAt,
 	)
 
-	// if error display the error
-	if err != nil {
-		fmt.Println(err.Error())
-		return false
-	}
-
-	return true
-}
-
-// Add a new feed for the chat
-func (r sChatRep) PushNewFeed(url string, chatId string) bool {
-	_, err := database.ChatCollection.UpdateOne(
-		context.TODO(),
-		bson.D{{
-			Key:   "chatid",
-			Value: chatId,
-		}},
-		bson.D{{
-			Key: "$push",
-			Value: bson.M{
-				"feeds": database.NewFeed(url),
-			},
-		}},
-	)
-
-	// if error display the error
-	if err != nil {
-		fmt.Println(err.Error())
-		return false
-	}
-
-	return true
-}
-
-// Create a new Chat
-func (r sChatRep) Create(
-	chatid string,
-	userid int64,
-	tags []string,
-	feedsUrl []string,
-) *database.Chat {
-	var listOfFeeds []database.Feed
-	for _, url := range feedsUrl {
-		listOfFeeds = append(listOfFeeds, *database.NewFeed(url))
-	}
-
-	chat := database.NewChat(
-		chatid,
-		userid,
-		listOfFeeds,
-		tags...,
-	)
-
-	_, err := database.ChatCollection.InsertOne(context.TODO(), chat)
+	// if null throw an error
 	if err != nil {
 		return nil
 	}
 
-	return chat
+	return NewChat(
+		id,
+		telegramChatId,
+		telegramUserId,
+		tags,
+		createdAt,
+		updatedAt,
+	)
+}
+
+// Create one chat
+func (rep *SChatRepository) Create(telegramChatId string, telegramUserId *string, tags []string) *dbChat {
+	q := `INSERT INTO chats (id, telegram_chat_id, telegram_user_id, tags) VALUES ($1, $2, $3, $4);`
+
+	newId := uuid.New().String()
+	_, err := database.Connection.Exec(
+		context.Background(),
+		q,
+		newId,
+		telegramChatId,
+		telegramUserId,
+		pq.Array(tags),
+	)
+	if err != nil {
+		fmt.Println("Couldn't create")
+		fmt.Println(err)
+	}
+
+	return rep.GetOne(newId)
+}
+
+// Delete one chat from the db
+func (rep *SChatRepository) Delete(uuid string) bool {
+	q := `DELETE FROM chats where id=$1`
+	res, err := database.Connection.Exec(context.Background(), q, uuid)
+
+	// if null throw an error
+	if err != nil {
+		fmt.Println("Couldn't delete", err.Error())
+		return false
+	}
+
+	isDelete := false
+	if res.RowsAffected() == 1 {
+		isDelete = true
+	}
+
+	return isDelete
 }

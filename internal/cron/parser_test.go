@@ -3,7 +3,7 @@ package cron
 import (
 	"testing"
 
-	v2 "github.com/Vico1993/Otto/internal/repository/v2"
+	"github.com/Vico1993/Otto/internal/repository"
 	"github.com/google/uuid"
 	"github.com/mmcdole/gofeed"
 	"github.com/stretchr/testify/assert"
@@ -68,13 +68,13 @@ func TestExecuteSuccessfulFeed(t *testing.T) {
 	}
 
 	// Mock Article Repository
-	articleRepositoryMock := new(v2.MocksArticleRepository)
+	articleRepositoryMock := new(repository.MocksArticleRepository)
 
 	// Article repository return nil on Find
 	articleRepositoryMock.On("GetByTitle", item.Title).Return(nil)
 
 	feedId := uuid.New().String()
-	articleExpected := v2.DBArticle{
+	articleExpected := repository.DBArticle{
 		Id:     uuid.New().String(),
 		FeedId: feedId,
 		Title:  item.Title,
@@ -137,10 +137,10 @@ func TestExecuteArticleAlreadyInDB(t *testing.T) {
 	}
 
 	// Mock Article Repository
-	articleRepositoryMock := new(v2.MocksArticleRepository)
+	articleRepositoryMock := new(repository.MocksArticleRepository)
 
 	feedId := uuid.New().String()
-	articleExpected := v2.DBArticle{
+	articleExpected := repository.DBArticle{
 		Id:     uuid.New().String(),
 		FeedId: feedId,
 		Title:  item.Title,
@@ -195,13 +195,13 @@ func TestExecuteNoCategoriesInItem(t *testing.T) {
 	}
 
 	// Mock Article Repository
-	articleRepositoryMock := new(v2.MocksArticleRepository)
+	articleRepositoryMock := new(repository.MocksArticleRepository)
 
 	// Article repository return nil on Find
 	articleRepositoryMock.On("GetByTitle", item.Title).Return(nil)
 
 	feedId := uuid.New().String()
-	articleExpected := v2.DBArticle{
+	articleExpected := repository.DBArticle{
 		Id:     uuid.New().String(),
 		FeedId: feedId,
 		Title:  item.Title,
@@ -258,13 +258,13 @@ func TestExecuteUnknownAuthor(t *testing.T) {
 	}
 
 	// Mock Article Repository
-	articleRepositoryMock := new(v2.MocksArticleRepository)
+	articleRepositoryMock := new(repository.MocksArticleRepository)
 
 	// Article repository return nil on Find
 	articleRepositoryMock.On("GetByTitle", item.Title).Return(nil)
 
 	feedId := uuid.New().String()
-	articleExpected := v2.DBArticle{
+	articleExpected := repository.DBArticle{
 		Id:     uuid.New().String(),
 		FeedId: feedId,
 		Title:  item.Title,

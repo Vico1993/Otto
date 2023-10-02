@@ -4,7 +4,7 @@
 
 Otto is a bot designed to help you stay up-to-date with the latest news by monitoring RSS feeds and sending notifications via Telegram.
 
-This part of the code only contains the API with the gestion of the Mongo DB
+This part of the code only contains the API with the gestion of the PostGreSQL DB
 
 ## Table of Contents
 
@@ -37,8 +37,11 @@ TELEGRAM_BOT_TOKEN=<TELEGRAM_BOT>
 # Used by the bot to know which chat to interact with
 TELEGRAM_USER_CHAT_ID=<CHAT_ID>
 
-#MONGO srv url you want to use with username + password for the connection
-MONGO_URI=<URI>
+#DATABASE postgreSQL url ex:postgresql://username:password@url/db
+DB_URI=<URI>
+
+# GIN if you want to override port for the api, by default 8080
+PORT=8888
 ```
 
 ## Installing

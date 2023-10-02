@@ -10,7 +10,7 @@ import (
 func feedsRoute(r *gin.Engine) {
 	feeds := r.Group("/feeds")
 	{
-		feeds.GET("/", handlers.GetAllFeed)
+		feeds.GET("/", handlers.GetAllFeeds)
 		feeds.POST("/", handlers.CreateFeed)
 
 		feedId := feeds.Group("/:feedid", middlewares.ValidFeed())

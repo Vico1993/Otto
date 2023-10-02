@@ -32,7 +32,7 @@ func GetArticle(c *gin.Context) {
 func DeleteArticle(c *gin.Context) {
 	article := c.MustGet("article").(*repository.DBArticle)
 
-	c.JSON(http.StatusOK, gin.H{"deleted": repository.Article.Delete(article.FeedId)})
+	c.JSON(http.StatusOK, gin.H{"deleted": repository.Article.Delete(article.Id)})
 }
 
 // Create article

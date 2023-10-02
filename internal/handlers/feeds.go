@@ -25,7 +25,7 @@ func CreateFeed(c *gin.Context) {
 }
 
 // Retrieve all Feed
-func GetAllFeed(c *gin.Context) {
+func GetAllFeeds(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"feeds": repository.Feed.GetAll()})
 }
 

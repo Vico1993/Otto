@@ -146,6 +146,7 @@ func (rep *SArticleRepository) GetOne(uuid string) *DBArticle {
 
 	// if null throw an error
 	if err != nil {
+		fmt.Println(err.Error())
 		return nil
 	}
 
@@ -169,6 +170,7 @@ func (rep *SArticleRepository) GetByFeedId(uuid string) []*DBArticle {
 	q := `SELECT id, feed_id, title, source, author, link, tags, created_at, updated_at FROM articles where feed_id=$1`
 	rows, err := database.Connection.Query(context.Background(), q, uuid)
 
+	// if null throw an error
 	if err != nil {
 		fmt.Println("Error Query Execute", err.Error())
 	}

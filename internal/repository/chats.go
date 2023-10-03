@@ -17,7 +17,7 @@ import (
 type DBChat struct {
 	Id             string    `db:"id"`
 	TelegramChatId string    `db:"telegram_chat_id"`
-	TelegramUserId *string   `db:"telegram_user_id, omitempty"`
+	TelegramUserId string    `db:"telegram_user_id, omitempty"`
 	Tags           []string  `db:"tags"`
 	CreatedAt      time.Time `db:"created_at"`
 	UpdatedAt      time.Time `db:"updated_at"`
@@ -26,7 +26,7 @@ type DBChat struct {
 func NewChat(
 	uuid pgtype.UUID,
 	telegramChatId string,
-	telegramUserId *string,
+	telegramUserId string,
 	tags []string,
 	createdAt time.Time,
 	updatedAt time.Time,
@@ -50,7 +50,7 @@ func NewChat(
 type IChatRepository interface {
 	GetAll() []*DBChat
 	GetOne(uuid string) *DBChat
-	Create(telegramChatId string, telegramUserId *string, tags []string) *DBChat
+	Create(telegramChatId string, telegramUserId string, tags []string) *DBChat
 	Delete(uuid string) bool
 	UpdateTags(uuid string, tags []string) bool
 }
@@ -70,7 +70,7 @@ func (rep *SChatRepository) GetAll() []*DBChat {
 
 	var id pgtype.UUID
 	var telegramChatId string
-	var telegramUserId *string
+	var telegramUserId string
 	var tags []string
 	var createdAt time.Time
 	var updatedAt time.Time
@@ -105,7 +105,7 @@ func (rep *SChatRepository) GetOne(uuid string) *DBChat {
 
 	var id pgtype.UUID
 	var telegramChatId string
-	var telegramUserId *string
+	var telegramUserId string
 	var tags []string
 	var createdAt time.Time
 	var updatedAt time.Time
@@ -138,7 +138,7 @@ func (rep *SChatRepository) GetOne(uuid string) *DBChat {
 }
 
 // Create one chat
-func (rep *SChatRepository) Create(telegramChatId string, telegramUserId *string, tags []string) *DBChat {
+func (rep *SChatRepository) Create(telegramChatId string, telegramUserId string, tags []string) *DBChat {
 	q := `INSERT INTO chats (id, telegram_chat_id, telegram_user_id, tags) VALUES ($1, $2, $3, $4);`
 
 	newId := uuid.New().String()
@@ -203,7 +203,7 @@ type MocksChatRepository struct {
 	mock.Mock
 }
 
-func (m *MocksChatRepository) Create(telegramChatId string, telegramUserId *string, tags []string) *DBChat {
+func (m *MocksChatRepository) Create(telegramChatId string, telegramUserId string, tags []string) *DBChat {
 	args := m.Called(telegramChatId, telegramUserId, tags)
 	return args.Get(0).(*DBChat)
 }

@@ -10,11 +10,11 @@ import (
 type chatCreatePost struct {
 	ChatId string   `json:"chat_id" binding:"required"`
 	UserId string   `json:"user_id"`
-	Tags   []string `form:"tags" binding:"required"`
+	Tags   []string `json:"tags" binding:"required"`
 }
 
 type createChatTagsPost struct {
-	Tags []string `form:"tags" binding:"required"`
+	Tags []string `json:"tags" binding:"required"`
 }
 
 // Road to create a Chat
@@ -25,7 +25,7 @@ func CreateChat(c *gin.Context) {
 		return
 	}
 
-	chat := repository.Chat.Create(json.ChatId, &json.UserId, json.Tags)
+	chat := repository.Chat.Create(json.ChatId, json.UserId, json.Tags)
 
 	c.JSON(http.StatusOK, gin.H{"chat": chat})
 }

@@ -321,10 +321,11 @@ func (rep *SArticleRepository) GetByChatAndTime(chatId string) []*DBArticle {
 		AND ( a.created_at > c.last_time_parsed OR c.last_time_parsed IS NULL )
 	`
 
-	rows, err := getConnection().Query(context.Background(), q)
+	rows, err := getConnection().Query(context.Background(), q, chatId)
 
 	if err != nil {
 		fmt.Println("Error Query Execute", err.Error())
+		return articles
 	}
 
 	var id pgtype.UUID

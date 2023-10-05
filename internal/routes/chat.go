@@ -15,6 +15,7 @@ func chatsRoute(r *gin.Engine) {
 		chatId := chats.Group("/:chatid", middlewares.ValidChat())
 		{
 			chatId.DELETE("/", handlers.DeleteChat)
+			chatId.GET("/parsed", handlers.ParsedChat)
 
 			feeds := chatId.Group("/feeds")
 			{

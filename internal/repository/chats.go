@@ -15,12 +15,13 @@ import (
 )
 
 type DBChat struct {
-	Id             string    `db:"id"`
-	TelegramChatId string    `db:"telegram_chat_id"`
-	TelegramUserId string    `db:"telegram_user_id, omitempty"`
-	Tags           []string  `db:"tags"`
-	CreatedAt      time.Time `db:"created_at"`
-	UpdatedAt      time.Time `db:"updated_at"`
+	Id             string     `db:"id"`
+	TelegramChatId string     `db:"telegram_chat_id"`
+	TelegramUserId string     `db:"telegram_user_id, omitempty"`
+	Tags           []string   `db:"tags"`
+	CreatedAt      time.Time  `db:"created_at"`
+	UpdatedAt      time.Time  `db:"updated_at"`
+	LastTimeParsed *time.Time `db:"last_time_parsed"`
 }
 
 func NewChat(
@@ -30,8 +31,8 @@ func NewChat(
 	tags []string,
 	createdAt time.Time,
 	updatedAt time.Time,
+	lastTimeParsed *time.Time,
 ) *DBChat {
-
 	var trimedTags []string
 	for _, tag := range tags {
 		trimedTags = append(trimedTags, strings.TrimSpace(tag))
@@ -44,6 +45,7 @@ func NewChat(
 		Tags:           trimedTags,
 		CreatedAt:      createdAt,
 		UpdatedAt:      updatedAt,
+		LastTimeParsed: lastTimeParsed,
 	}
 }
 
@@ -53,6 +55,7 @@ type IChatRepository interface {
 	Create(telegramChatId string, telegramUserId string, tags []string) *DBChat
 	Delete(uuid string) bool
 	UpdateTags(uuid string, tags []string) bool
+	UpdateParsed(uuid string) bool
 }
 
 type SChatRepository struct{}
@@ -61,7 +64,7 @@ type SChatRepository struct{}
 func (rep *SChatRepository) GetAll() []*DBChat {
 	var chats []*DBChat
 
-	q := `SELECT id, telegram_chat_id, telegram_user_id, tags, created_at, updated_at FROM chats`
+	q := `SELECT id, telegram_chat_id, telegram_user_id, tags, created_at, updated_at, last_time_parsed FROM chats`
 	rows, err := database.Connection.Query(context.Background(), q)
 
 	if err != nil {
@@ -74,7 +77,8 @@ func (rep *SChatRepository) GetAll() []*DBChat {
 	var tags []string
 	var createdAt time.Time
 	var updatedAt time.Time
-	params := []any{&id, &telegramChatId, &telegramUserId, &tags, &createdAt, &updatedAt}
+	var lastTimeParsed *time.Time
+	params := []any{&id, &telegramChatId, &telegramUserId, &tags, &createdAt, &updatedAt, &lastTimeParsed}
 	_, err = pgx.ForEachRow(rows, params, func() error {
 
 		chats = append(
@@ -86,6 +90,7 @@ func (rep *SChatRepository) GetAll() []*DBChat {
 				tags,
 				createdAt,
 				updatedAt,
+				lastTimeParsed,
 			),
 		)
 
@@ -101,7 +106,7 @@ func (rep *SChatRepository) GetAll() []*DBChat {
 
 // Return one chat, nil if not found
 func (rep *SChatRepository) GetOne(uuid string) *DBChat {
-	q := `SELECT id, telegram_chat_id, telegram_user_id, tags, created_at, updated_at FROM chats where id=$1`
+	q := `SELECT id, telegram_chat_id, telegram_user_id, tags, created_at, updated_at, last_time_parsed FROM chats where id=$1`
 
 	var id pgtype.UUID
 	var telegramChatId string
@@ -109,6 +114,7 @@ func (rep *SChatRepository) GetOne(uuid string) *DBChat {
 	var tags []string
 	var createdAt time.Time
 	var updatedAt time.Time
+	var lastTimeParsed *time.Time
 	err := database.Connection.QueryRow(
 		context.Background(),
 		q,
@@ -120,10 +126,13 @@ func (rep *SChatRepository) GetOne(uuid string) *DBChat {
 		&tags,
 		&createdAt,
 		&updatedAt,
+		&lastTimeParsed,
 	)
 
 	// if null throw an error
 	if err != nil {
+		fmt.Println("Fail Retrieved Chat")
+		fmt.Println(err.Error())
 		return nil
 	}
 
@@ -134,6 +143,7 @@ func (rep *SChatRepository) GetOne(uuid string) *DBChat {
 		tags,
 		createdAt,
 		updatedAt,
+		lastTimeParsed,
 	)
 }
 
@@ -199,6 +209,27 @@ func (rep *SChatRepository) UpdateTags(uuid string, tags []string) bool {
 	return false
 }
 
+// Update the parsed time
+func (rep *SChatRepository) UpdateParsed(uuid string) bool {
+	q := `UPDATE chats SET last_time_parsed=NOW() WHERE id=$1;`
+
+	res, err := database.Connection.Exec(
+		context.Background(),
+		q,
+		uuid,
+	)
+	if err != nil {
+		fmt.Println("Couldn't create")
+		fmt.Println(err)
+	}
+
+	if res.RowsAffected() == 1 {
+		return true
+	}
+
+	return false
+}
+
 type MocksChatRepository struct {
 	mock.Mock
 }
@@ -235,5 +266,10 @@ func (m *MocksChatRepository) GetByChatId(uuid string) []string {
 
 func (m *MocksChatRepository) UpdateTags(uuid string, tags []string) bool {
 	args := m.Called(uuid, tags)
+	return args.Get(0).(bool)
+}
+
+func (m *MocksChatRepository) UpdateParsed(uuid string) bool {
+	args := m.Called(uuid)
 	return args.Get(0).(bool)
 }

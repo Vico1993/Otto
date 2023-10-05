@@ -3,11 +3,9 @@ package cron
 import (
 	"errors"
 	"net/url"
-	"strings"
 
 	textrank "github.com/DavidBelicza/TextRank/v2"
 	"github.com/Vico1993/Otto/internal/repository"
-	"github.com/Vico1993/Otto/internal/utils"
 	"github.com/mmcdole/gofeed"
 )
 
@@ -70,19 +68,6 @@ func (p *parser) execute(articleRepository repository.IArticleRepository, feedId
 	}
 
 	return nil
-}
-
-// find if a list of categories is in tags
-// and return the list of tags present in the categories
-func (p *parser) isCategoriesAndTagsMatch(categories []string) []string {
-	match := []string{}
-	for _, category := range categories {
-		if utils.InSlice(strings.ToLower(category), p.tags) {
-			match = append(match, strings.ToLower(category))
-		}
-	}
-
-	return match
 }
 
 // Extract important word from the title

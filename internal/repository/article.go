@@ -73,7 +73,7 @@ func (rep *SArticleRepository) GetAll() []*DBArticle {
 	var articles []*DBArticle
 
 	q := `SELECT id, feed_id, title, source, author, link, tags, created_at, updated_at FROM articles`
-	rows, err := database.Connection.Query(context.Background(), q)
+	rows, err := getConnection().Query(context.Background(), q)
 
 	if err != nil {
 		fmt.Println("Error Query Execute", err.Error())
@@ -129,7 +129,7 @@ func (rep *SArticleRepository) GetOne(uuid string) *DBArticle {
 	var tags []string
 	var createdAt time.Time
 	var updatedAt time.Time
-	err := database.Connection.QueryRow(
+	err := getConnection().QueryRow(
 		context.Background(),
 		q,
 		uuid,
@@ -169,7 +169,7 @@ func (rep *SArticleRepository) GetByFeedId(uuid string) []*DBArticle {
 	var articles []*DBArticle
 
 	q := `SELECT id, feed_id, title, source, author, link, tags, created_at, updated_at FROM articles where feed_id=$1`
-	rows, err := database.Connection.Query(context.Background(), q, uuid)
+	rows, err := getConnection().Query(context.Background(), q, uuid)
 
 	// if null throw an error
 	if err != nil {
@@ -225,7 +225,7 @@ func (rep *SArticleRepository) GetByTitle(title string) *DBArticle {
 	var tags []string
 	var createdAt time.Time
 	var updatedAt time.Time
-	err := database.Connection.QueryRow(
+	err := getConnection().QueryRow(
 		context.Background(),
 		q,
 		title,
@@ -264,7 +264,7 @@ func (rep *SArticleRepository) Create(feedId string, title string, source string
 	q := `INSERT INTO articles (id, feed_id, title, source, author, link, tags) VALUES ($1, $2, $3, $4, $5, $6, $7);`
 
 	newId := uuid.New().String()
-	_, err := database.Connection.Exec(
+	_, err := getConnection().Exec(
 		context.Background(),
 		q,
 		newId,
@@ -287,7 +287,7 @@ func (rep *SArticleRepository) Create(feedId string, title string, source string
 // Delete one article from the db
 func (rep *SArticleRepository) Delete(uuid string) bool {
 	q := `DELETE FROM articles where id=$1`
-	res, err := database.Connection.Exec(context.Background(), q, uuid)
+	res, err := getConnection().Exec(context.Background(), q, uuid)
 
 	// if null throw an error
 	if err != nil {
@@ -321,7 +321,7 @@ func (rep *SArticleRepository) GetByChatAndTime(chatId string) []*DBArticle {
 		AND ( a.created_at > c.last_time_parsed OR c.last_time_parsed IS NULL )
 	`
 
-	rows, err := database.Connection.Query(context.Background(), q)
+	rows, err := getConnection().Query(context.Background(), q)
 
 	if err != nil {
 		fmt.Println("Error Query Execute", err.Error())

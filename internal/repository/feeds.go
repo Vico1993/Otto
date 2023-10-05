@@ -50,7 +50,7 @@ func (rep *SFeedRepository) GetAll() []*DBFeed {
 	var feeds []*DBFeed
 
 	q := `SELECT id, url, created_at, updated_at FROM feeds`
-	rows, err := database.Connection.Query(context.Background(), q)
+	rows, err := getConnection().Query(context.Background(), q)
 
 	if err != nil {
 		fmt.Println("Error Query Execute", err.Error())
@@ -90,7 +90,7 @@ func (rep *SFeedRepository) GetOne(uuid string) *DBFeed {
 	var url string
 	var createdAt time.Time
 	var updatedAt time.Time
-	err := database.Connection.QueryRow(
+	err := getConnection().QueryRow(
 		context.Background(),
 		q,
 		uuid,
@@ -119,7 +119,7 @@ func (rep *SFeedRepository) Create(url string) *DBFeed {
 	q := `INSERT INTO feeds (id, url) VALUES ($1, $2);`
 
 	newId := uuid.New().String()
-	_, err := database.Connection.Exec(
+	_, err := getConnection().Exec(
 		context.Background(),
 		q,
 		newId,
@@ -136,7 +136,7 @@ func (rep *SFeedRepository) Create(url string) *DBFeed {
 // Delete one feed from the db
 func (rep *SFeedRepository) Delete(uuid string) bool {
 	q := `DELETE FROM feeds where id=$1`
-	res, err := database.Connection.Exec(context.Background(), q, uuid)
+	res, err := getConnection().Exec(context.Background(), q, uuid)
 
 	// if null throw an error
 	if err != nil {
@@ -162,7 +162,7 @@ func (rep *SFeedRepository) GetByChatId(uuid string) []string {
 		INNER JOIN chat_feed as cf
 			ON cf.feed_id = f.id
 		WHERE cf.chat_id=$1`
-	rows, err := database.Connection.Query(context.Background(), q, uuid)
+	rows, err := getConnection().Query(context.Background(), q, uuid)
 
 	if err != nil {
 		fmt.Println("Error Query Execute", err.Error())
@@ -190,12 +190,13 @@ func (rep *SFeedRepository) GetByChatId(uuid string) []string {
 func (rep *SFeedRepository) LinkChatAndFeed(feedId string, chatId string) bool {
 	q := `INSERT INTO chat_feed (chat_id, feed_id) VALUES ($1, $2);`
 
-	_, err := database.Connection.Exec(
+	_, err := getConnection().Exec(
 		context.Background(),
 		q,
 		chatId,
 		feedId,
 	)
+
 	if err != nil {
 		fmt.Println("Couldn't create")
 		fmt.Println(err)
@@ -209,7 +210,7 @@ func (rep *SFeedRepository) LinkChatAndFeed(feedId string, chatId string) bool {
 // Delete one feed from the db
 func (rep *SFeedRepository) UnLinkChatAndFeed(feedId string, chatId string) bool {
 	q := `DELETE FROM chat_feed where chat_id=$1 AND feed_id=$2`
-	res, err := database.Connection.Exec(context.Background(), q, chatId, feedId)
+	res, err := getConnection().Exec(context.Background(), q, chatId, feedId)
 
 	// if null throw an error
 	if err != nil {

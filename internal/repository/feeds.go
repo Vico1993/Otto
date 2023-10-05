@@ -196,6 +196,7 @@ func (rep *SFeedRepository) LinkChatAndFeed(feedId string, chatId string) bool {
 		chatId,
 		feedId,
 	)
+
 	if err != nil {
 		fmt.Println("Couldn't create")
 		fmt.Println(err)

@@ -197,6 +197,7 @@ func (rep *SChatRepository) UpdateTags(uuid string, tags []string) bool {
 		pq.Array(tags),
 		uuid,
 	)
+
 	if err != nil {
 		fmt.Println("Couldn't create")
 		fmt.Println(err)

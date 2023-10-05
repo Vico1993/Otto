@@ -1,11 +1,9 @@
 package database
 
 import (
-	"context"
 	"fmt"
 	"os"
 
-	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 
 	"github.com/golang-migrate/migrate/v4"
@@ -13,23 +11,12 @@ import (
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 )
 
-var Connection *pgx.Conn = nil
-
 func TransformUUIDToString(uuid pgtype.UUID) string {
 	return fmt.Sprintf("%x-%x-%x-%x-%x", uuid.Bytes[0:4], uuid.Bytes[4:6], uuid.Bytes[6:8], uuid.Bytes[8:10], uuid.Bytes[10:16])
 }
 
 func Init() {
 	_ = migrations()
-
-	conn, err := pgx.Connect(context.Background(), os.Getenv("DB_URI"))
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Unable to connect to database: %v\n", err)
-		os.Exit(1)
-	}
-
-	Connection = conn
-
 }
 
 func migrations() error {

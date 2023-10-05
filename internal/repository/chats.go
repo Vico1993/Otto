@@ -65,7 +65,7 @@ func (rep *SChatRepository) GetAll() []*DBChat {
 	var chats []*DBChat
 
 	q := `SELECT id, telegram_chat_id, telegram_user_id, tags, created_at, updated_at, last_time_parsed FROM chats`
-	rows, err := database.Connection.Query(context.Background(), q)
+	rows, err := getConnection().Query(context.Background(), q)
 
 	if err != nil {
 		fmt.Println("Error Query Execute", err.Error())
@@ -115,7 +115,7 @@ func (rep *SChatRepository) GetOne(uuid string) *DBChat {
 	var createdAt time.Time
 	var updatedAt time.Time
 	var lastTimeParsed *time.Time
-	err := database.Connection.QueryRow(
+	err := getConnection().QueryRow(
 		context.Background(),
 		q,
 		uuid,
@@ -152,7 +152,7 @@ func (rep *SChatRepository) Create(telegramChatId string, telegramUserId string,
 	q := `INSERT INTO chats (id, telegram_chat_id, telegram_user_id, tags) VALUES ($1, $2, $3, $4);`
 
 	newId := uuid.New().String()
-	_, err := database.Connection.Exec(
+	_, err := getConnection().Exec(
 		context.Background(),
 		q,
 		newId,
@@ -171,7 +171,7 @@ func (rep *SChatRepository) Create(telegramChatId string, telegramUserId string,
 // Delete one chat from the db
 func (rep *SChatRepository) Delete(uuid string) bool {
 	q := `DELETE FROM chats where id=$1`
-	res, err := database.Connection.Exec(context.Background(), q, uuid)
+	res, err := getConnection().Exec(context.Background(), q, uuid)
 
 	// if null throw an error
 	if err != nil {
@@ -191,7 +191,7 @@ func (rep *SChatRepository) Delete(uuid string) bool {
 func (rep *SChatRepository) UpdateTags(uuid string, tags []string) bool {
 	q := `UPDATE chats SET tags=$1 WHERE id=$2;`
 
-	res, err := database.Connection.Exec(
+	res, err := getConnection().Exec(
 		context.Background(),
 		q,
 		pq.Array(tags),
@@ -213,7 +213,7 @@ func (rep *SChatRepository) UpdateTags(uuid string, tags []string) bool {
 func (rep *SChatRepository) UpdateParsed(uuid string) bool {
 	q := `UPDATE chats SET last_time_parsed=NOW() WHERE id=$1;`
 
-	res, err := database.Connection.Exec(
+	res, err := getConnection().Exec(
 		context.Background(),
 		q,
 		uuid,

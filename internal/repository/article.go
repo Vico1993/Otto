@@ -63,6 +63,7 @@ type IArticleRepository interface {
 	GetByFeedId(uuid string) []*DBArticle
 	Create(feedId string, title string, source string, author string, link string, tags []string) *DBArticle
 	Delete(uuid string) bool
+	GetByChatAndTime(chatId string) []*DBArticle
 }
 
 type SArticleRepository struct{}
@@ -302,6 +303,67 @@ func (rep *SArticleRepository) Delete(uuid string) bool {
 	return isDelete
 }
 
+// Retrieve new Article based on chat last time parsed
+func (rep *SArticleRepository) GetByChatAndTime(chatId string) []*DBArticle {
+	var articles []*DBArticle
+	q := `
+		SELECT
+			a.*
+		FROM CHATS as c
+		INNER JOIN chat_feed as cf
+			ON cf.chat_id = c.id
+		INNER JOIN articles as a
+			ON a.feed_id = cf.feed_id
+		LEFT JOIN chat_article as aa
+			ON aa.chat_id = c.id
+		WHERE c.id = $1
+		AND aa.id IS NULL -- Make sure is has been published notified yet
+		AND ( a.created_at > c.last_time_parsed OR c.last_time_parsed IS NULL )
+	`
+
+	rows, err := database.Connection.Query(context.Background(), q)
+
+	if err != nil {
+		fmt.Println("Error Query Execute", err.Error())
+	}
+
+	var id pgtype.UUID
+	var feedId pgtype.UUID
+	var title string
+	var source string
+	var author string
+	var link string
+	var tags []string
+	var createdAt time.Time
+	var updatedAt time.Time
+	params := []any{&id, &feedId, &title, &source, &author, &link, &tags, &createdAt, &updatedAt}
+	_, err = pgx.ForEachRow(rows, params, func() error {
+
+		articles = append(
+			articles,
+			NewArticle(
+				id,
+				feedId,
+				title,
+				source,
+				author,
+				link,
+				tags,
+				createdAt,
+				updatedAt,
+			),
+		)
+
+		return nil
+	})
+
+	if err != nil {
+		fmt.Println("Error ForEach", err.Error())
+	}
+
+	return articles
+}
+
 type MocksArticleRepository struct {
 	mock.Mock
 }
@@ -344,5 +406,11 @@ func (m *MocksArticleRepository) GetOne(uuid string) *DBArticle {
 
 func (m *MocksArticleRepository) GetAll() []*DBArticle {
 	args := m.Called()
+	return args.Get(0).([]*DBArticle)
+}
+
+func (m *MocksArticleRepository) GetByChatAndTime(chatId string) []*DBArticle {
+	args := m.Called(chatId)
+
 	return args.Get(0).([]*DBArticle)
 }

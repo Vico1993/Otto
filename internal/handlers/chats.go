@@ -107,3 +107,12 @@ func DeleteChatTag(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"tags": chat.Tags})
 }
+
+// Update Parsed value for Chat
+func ParsedChat(c *gin.Context) {
+	chat := c.MustGet("chat").(*repository.DBChat)
+
+	repository.Chat.UpdateParsed(chat.Id)
+
+	c.JSON(http.StatusNoContent, gin.H{})
+}

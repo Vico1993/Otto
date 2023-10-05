@@ -5,6 +5,8 @@ import (
 	"net/url"
 	"os"
 	"strings"
+
+	"github.com/stretchr/testify/mock"
 )
 
 type ITelegramService interface {
@@ -72,4 +74,21 @@ func buildData(params map[string]string) url.Values {
 	}
 
 	return data
+}
+
+type MocksTelegramService struct {
+	mock.Mock
+}
+
+func (m *MocksTelegramService) TelegramPostMessage(chatId string, text string) {
+	m.Called(chatId, text)
+}
+
+func (m *MocksTelegramService) TelegramUpdateTyping(chatId string, val bool) {
+	m.Called(chatId, val)
+}
+
+func (m *MocksTelegramService) GetBaseUrl() string {
+	args := m.Called()
+	return args.String(0)
 }

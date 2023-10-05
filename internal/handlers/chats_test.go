@@ -409,3 +409,30 @@ func TestDeleteChatTagTagNotFound(t *testing.T) {
 	assert.Equal(t, http.StatusBadRequest, recorder.Result().StatusCode, "StatusCode should be 400 Bad Request")
 	assert.Equal(t, "Tag not found", res.Error)
 }
+
+func TestParsedChat(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	recorder := httptest.NewRecorder()
+	ctx, _ := gin.CreateTestContext(recorder)
+
+	mockChatRepository := new(repository.MocksChatRepository)
+	repository.Chat = mockChatRepository
+
+	chatExpected := repository.DBChat{
+		Id:             uuid.New().String(),
+		TelegramChatId: "124",
+		TelegramUserId: "",
+		Tags:           []string{"test1", "test2"},
+	}
+
+	ctx.Set("chat", &chatExpected)
+
+	mockChatRepository.On("UpdateParsed", chatExpected.Id).Return(true)
+
+	ParsedChat(ctx)
+
+	mockChatRepository.AssertCalled(t, "UpdateParsed", chatExpected.Id)
+
+	assert.Equal(t, http.StatusNoContent, recorder.Result().StatusCode, "StatusCode should be 204 no content")
+}

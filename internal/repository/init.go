@@ -31,7 +31,7 @@ func getConnection() *pgxpool.Pool {
 		os.Exit(1)
 	}
 
-	config.MaxConnLifetime = time.Minute * 5
+	config.MaxConnLifetime = time.Minute * 1
 
 	conn, err := pgxpool.NewWithConfig(context.Background(), config)
 	if err != nil {

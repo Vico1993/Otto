@@ -18,9 +18,9 @@ func checkChat() {
 	// Get All Chats
 	chatsList := repository.Chat.GetAll()
 
-	jobs, err := Scheduler.FindJobsByTag(feedsTag)
-	// No job found but we have feeds
-	// OR if we have more or less feed than before
+	jobs, err := Scheduler.FindJobsByTag(chatsTag)
+	// No job found but we have chats
+	// OR if we have more or less chats than before
 	if (err != nil && len(chatsList) > 0) || (len(chatsList) != len(jobs)) {
 		fmt.Println("Need Reset Chats")
 		chats(chatsList)

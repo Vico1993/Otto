@@ -78,6 +78,7 @@ func parsedArticles(articles []*repository.DBArticle, chat *repository.DBChat) {
 
 	telegram.TelegramUpdateTyping(chat.TelegramChatId, true)
 	for _, article := range articles {
+		article := article
 		matched := isCategoriesAndTagsMatch(chat.Tags, article.Tags)
 		if len(matched) == 0 {
 			continue

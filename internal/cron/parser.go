@@ -44,10 +44,16 @@ func (p *parser) execute(articleRepository repository.IArticleRepository, feedId
 	for _, item := range feed.Items {
 		item := item
 
+		fmt.Println("FeedJob - Item tags")
+		fmt.Println(item.Categories)
 		itemTags := item.Categories
 		if len(itemTags) == 0 {
+			fmt.Println("FeedJob - No categories found")
 			itemTags = p.findTagFromTitle(item.Title)
 		}
+
+		fmt.Println("FeedJob - Final tags for item")
+		fmt.Println(itemTags)
 
 		// Looking into the DB to find if it's a new article...
 		articleFound := articleRepository.GetByTitle(item.Title)

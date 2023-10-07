@@ -2,6 +2,7 @@ package cron
 
 import (
 	"errors"
+	"fmt"
 	"net/url"
 
 	textrank "github.com/DavidBelicza/TextRank/v2"
@@ -38,6 +39,8 @@ func (p *parser) execute(articleRepository repository.IArticleRepository, feedId
 		return errors.New("Couldn't parsed " + url.Host + ": " + err.Error())
 	}
 
+	fmt.Println("FeedJob - Number of element found")
+	fmt.Println(len(feed.Items))
 	for _, item := range feed.Items {
 		item := item
 

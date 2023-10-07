@@ -80,9 +80,17 @@ func parsedArticles(articles []*repository.DBArticle, chat *repository.DBChat) {
 	for _, article := range articles {
 		article := article
 		matched := isCategoriesAndTagsMatch(chat.Tags, article.Tags)
+		fmt.Println("ChatJob - Chat tags")
+		fmt.Println(chat.Tags)
+
+		fmt.Println("ChatJob - Article tags")
+		fmt.Println(article.Tags)
 		if len(matched) == 0 {
+			fmt.Println("ChatJob - Article doesn't match tags")
 			continue
 		}
+
+		fmt.Println("ChatJob - Article match tags")
 
 		host := article.Source
 		u, err := url.Parse(article.Source)

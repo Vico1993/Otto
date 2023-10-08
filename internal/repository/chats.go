@@ -52,6 +52,7 @@ func NewChat(
 type IChatRepository interface {
 	GetAll() []*DBChat
 	GetOne(uuid string) *DBChat
+	GetByTelegramChatId(id string) *DBChat
 	Create(telegramChatId string, telegramUserId string, tags []string) *DBChat
 	Delete(uuid string) bool
 	UpdateTags(uuid string, tags []string) bool
@@ -119,6 +120,49 @@ func (rep *SChatRepository) GetOne(uuid string) *DBChat {
 		context.Background(),
 		q,
 		uuid,
+	).Scan(
+		&id,
+		&telegramChatId,
+		&telegramUserId,
+		&tags,
+		&createdAt,
+		&updatedAt,
+		&lastTimeParsed,
+	)
+
+	// if null throw an error
+	if err != nil {
+		fmt.Println("Fail Retrieved Chat")
+		fmt.Println(err.Error())
+		return nil
+	}
+
+	return NewChat(
+		id,
+		telegramChatId,
+		telegramUserId,
+		tags,
+		createdAt,
+		updatedAt,
+		lastTimeParsed,
+	)
+}
+
+// Return one chat, nil if not found
+func (rep *SChatRepository) GetByTelegramChatId(chatId string) *DBChat {
+	q := `SELECT id, telegram_chat_id, telegram_user_id, tags, created_at, updated_at, last_time_parsed FROM chats where telegram_chat_id=$1`
+
+	var id pgtype.UUID
+	var telegramChatId string
+	var telegramUserId string
+	var tags []string
+	var createdAt time.Time
+	var updatedAt time.Time
+	var lastTimeParsed *time.Time
+	err := getConnection().QueryRow(
+		context.Background(),
+		q,
+		chatId,
 	).Scan(
 		&id,
 		&telegramChatId,
@@ -247,6 +291,16 @@ func (m *MocksChatRepository) Delete(uuid string) bool {
 
 func (m *MocksChatRepository) GetOne(uuid string) *DBChat {
 	args := m.Called(uuid)
+
+	if args.Get(0) == nil {
+		return nil
+	}
+
+	return args.Get(0).(*DBChat)
+}
+
+func (m *MocksChatRepository) GetByTelegramChatId(chatId string) *DBChat {
+	args := m.Called(chatId)
 
 	if args.Get(0) == nil {
 		return nil

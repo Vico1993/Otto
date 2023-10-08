@@ -29,7 +29,6 @@ func main() {
 	cron.Init()
 
 	// Start cron exec
-	// Blocking for now
 	cron.Scheduler.StartAsync()
 
 	// Notify update

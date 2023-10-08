@@ -117,7 +117,7 @@ func parsedArticles(articles []*repository.DBArticle, chat *repository.DBChat) {
 func isCategoriesAndTagsMatch(chatTags []string, articleCategories []string) []string {
 	match := []string{}
 	for _, category := range chatTags {
-		if utils.InSlice(strings.ToLower(category), articleCategories) {
+		if utils.InSlice(category, articleCategories) {
 			match = append(match, strings.ToLower(category))
 		}
 	}

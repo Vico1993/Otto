@@ -33,6 +33,7 @@ func TestCreateChat(t *testing.T) {
 		Tags:           []string{"test1", "test2"},
 	}
 
+	mockChatRepository.On("GetByTelegramChatId", "124").Return(nil)
 	mockChatRepository.On("Create", chatExpected.TelegramChatId, "", chatExpected.Tags).Return(&chatExpected)
 
 	content := map[string]interface{}{
@@ -44,6 +45,7 @@ func TestCreateChat(t *testing.T) {
 
 	CreateChat(ctx)
 
+	mockChatRepository.AssertCalled(t, "GetByTelegramChatId", "124")
 	mockChatRepository.AssertCalled(t, "Create", chatExpected.TelegramChatId, "", chatExpected.Tags)
 
 	var res Response
@@ -82,6 +84,46 @@ func TestCreateChatMissingRequiredField(t *testing.T) {
 
 	assert.Equal(t, http.StatusBadRequest, recorder.Result().StatusCode, "StatusCode should be 400 Bad Request")
 	assert.Equal(t, "Key: 'chatCreatePost.ChatId' Error:Field validation for 'ChatId' failed on the 'required' tag", res.Error)
+}
+
+func TestCreateChatTelegramChatIdAlreadyUsed(t *testing.T) {
+	type Response struct {
+		Error string `json:"error"`
+	}
+
+	gin.SetMode(gin.TestMode)
+
+	recorder := httptest.NewRecorder()
+	ctx, _ := gin.CreateTestContext(recorder)
+
+	mockChatRepository := new(repository.MocksChatRepository)
+	repository.Chat = mockChatRepository
+
+	content := map[string]interface{}{
+		"chat_id": "124",
+		"tags":    []string{"test1", "test2"},
+	}
+
+	chat := repository.DBChat{
+		Id:             uuid.New().String(),
+		TelegramChatId: "124",
+		TelegramUserId: "",
+		Tags:           []string{"test1", "test2"},
+	}
+
+	utils.MockPostRequest(ctx, content, false)
+	mockChatRepository.On("GetByTelegramChatId", "124").Return(&chat)
+
+	CreateChat(ctx)
+
+	mockChatRepository.AssertCalled(t, "GetByTelegramChatId", "124")
+	mockChatRepository.AssertNotCalled(t, "Create")
+
+	var res Response
+	_ = json.Unmarshal(recorder.Body.Bytes(), &res)
+
+	assert.Equal(t, http.StatusBadRequest, recorder.Result().StatusCode, "StatusCode should be 400 Bad Request")
+	assert.Equal(t, "Chat id already used", res.Error)
 }
 
 func TestDeleteChat(t *testing.T) {

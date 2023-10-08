@@ -25,6 +25,13 @@ func CreateChat(c *gin.Context) {
 		return
 	}
 
+	// Check if chatId already in DB
+	chatDb := repository.Chat.GetByTelegramChatId(json.ChatId)
+	if chatDb != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Chat id already used"})
+		return
+	}
+
 	chat := repository.Chat.Create(json.ChatId, json.UserId, json.Tags)
 
 	c.JSON(http.StatusOK, gin.H{"chat": chat})

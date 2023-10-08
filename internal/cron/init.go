@@ -28,6 +28,7 @@ func Init() {
 	if err != nil {
 		fmt.Println("Couldn't initiate the main job - " + err.Error())
 	}
+
 }
 
 // Calculate the delay between each job base on the number of feed

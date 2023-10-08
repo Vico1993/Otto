@@ -10,8 +10,8 @@ import (
 // Chat Mildleware to make sure Chat exist
 func ValidChat() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		uuid := c.Param("chatid")
-		chat := repository.Chat.GetOne(uuid)
+		id := c.Param("chatid")
+		chat := repository.Chat.GetByTelegramChatId(id)
 
 		if chat == nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid Request parameters"})

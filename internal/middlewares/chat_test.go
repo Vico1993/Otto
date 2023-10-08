@@ -17,7 +17,7 @@ func TestNotValidChatId(t *testing.T) {
 	mocksChatRepository := new(repository.MocksChatRepository)
 	repository.Chat = mocksChatRepository
 
-	mocksChatRepository.On("GetOne", "foo").Return(nil)
+	mocksChatRepository.On("GetByTelegramChatId", "foo").Return(nil)
 
 	r := gin.Default()
 	r.Use(ValidChat())
@@ -27,7 +27,7 @@ func TestNotValidChatId(t *testing.T) {
 	recorder := httptest.NewRecorder()
 	r.ServeHTTP(recorder, httptest.NewRequest("GET", "/chats/foo", nil))
 
-	mocksChatRepository.AssertCalled(t, "GetOne", "foo")
+	mocksChatRepository.AssertCalled(t, "GetByTelegramChatId", "foo")
 
 	assert.Equal(t, http.StatusBadRequest, recorder.Result().StatusCode, "Invalid the status code "+strconv.Itoa(http.StatusBadRequest))
 }

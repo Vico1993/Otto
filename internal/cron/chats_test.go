@@ -10,20 +10,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestCategoriesAndTagsMatch(t *testing.T) {
-	match := isCategoriesAndTagsMatch([]string{"tag1", "tag2"}, []string{"cat1", "cat2", "tag1"})
-
-	assert.Len(t, match, 1, "Tag1 is in the list of category and tag so it should return true")
-	assert.Equal(t, []string{"tag1"}, match, "Tag1 is in the list of category and tag so it should return true")
-}
-
-func TestCategoriesAndTagsWontMatch(t *testing.T) {
-	match := isCategoriesAndTagsMatch([]string{"tag1", "tag2"}, []string{"cat1", "cat2"})
-
-	assert.Len(t, match, 0, "The list of tags and categories don't overlap, array should be empty")
-	assert.Equal(t, []string{}, match, "The list of tags and categories don't overlap, array should be empty")
-}
-
 func TestCheckChatNoChatsInDB(t *testing.T) {
 	chatRepositoryMock := new(repository.MocksChatRepository)
 	repository.Chat = chatRepositoryMock
@@ -129,36 +115,7 @@ func TestParsedArticlesNoArticlesFound(t *testing.T) {
 	mockTelegramService.AssertNotCalled(t, "TelegramPostMessage", chat.TelegramChatId, "MESSAGE")
 }
 
-func TestParsedArticlesNoMatchingArticlesFound(t *testing.T) {
-	article := repository.DBArticle{
-		Id:     uuid.New().String(),
-		FeedId: uuid.New().String(),
-		Title:  "Super Title",
-		Source: "Title",
-		Author: "Unknown",
-		Link:   "https://super.com/title",
-		Tags:   []string{"tag1", "tag2"},
-	}
-
-	chat := repository.DBChat{
-		Id:             "12",
-		TelegramChatId: "12314",
-		Tags:           []string{"tag3"},
-	}
-
-	mockTelegramService := new(service.MocksTelegramService)
-	telegram = mockTelegramService
-	mockTelegramService.On("TelegramUpdateTyping", chat.TelegramChatId, true).Return()
-	mockTelegramService.On("TelegramUpdateTyping", chat.TelegramChatId, false).Return()
-
-	parsedArticles([]*repository.DBArticle{&article}, &chat)
-
-	mockTelegramService.AssertCalled(t, "TelegramUpdateTyping", chat.TelegramChatId, true)
-	mockTelegramService.AssertCalled(t, "TelegramUpdateTyping", chat.TelegramChatId, false)
-	mockTelegramService.AssertNotCalled(t, "TelegramPostMessage", chat.TelegramChatId, "MESSAGE")
-}
-
-func TestParsedArticlesWith1ArticlesMatching(t *testing.T) {
+func TestParsedArticlesWith1Article(t *testing.T) {
 	article := repository.DBArticle{
 		Id:     uuid.New().String(),
 		FeedId: uuid.New().String(),

@@ -13,7 +13,7 @@ func checkFeed() {
 	fmt.Println("Checking Feeds")
 
 	// Get All Feeds
-	feedsList := repository.Feed.GetAll()
+	feedsList := repository.Feed.GetAllActive()
 
 	jobs, err := Scheduler.FindJobsByTag(feedsTag)
 	// No job found but we have feeds

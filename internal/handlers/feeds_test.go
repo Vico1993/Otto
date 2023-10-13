@@ -27,8 +27,9 @@ func TestGetAllFeeds(t *testing.T) {
 	repository.Feed = mocksFeedRepository
 
 	feedExpected := repository.DBFeed{
-		Id:  uuid.New().String(),
-		Url: "https://google.com",
+		Id:       uuid.New().String(),
+		Url:      "https://google.com",
+		Disabled: false,
 	}
 
 	mocksFeedRepository.On("GetAll").Return([]*repository.DBFeed{&feedExpected})
@@ -36,6 +37,39 @@ func TestGetAllFeeds(t *testing.T) {
 	GetAllFeeds(ctx)
 
 	mocksFeedRepository.AssertCalled(t, "GetAll")
+
+	var res Response
+	_ = json.Unmarshal(recorder.Body.Bytes(), &res)
+
+	assert.Equal(t, http.StatusOK, recorder.Result().StatusCode, "StatusCode should be OK")
+	assert.NotEmpty(t, res.Feeds)
+	assert.Len(t, res.Feeds, 1)
+}
+
+func TestGetAllActiveFeeds(t *testing.T) {
+	type Response struct {
+		Feeds []*repository.DBFeed `json:"feeds"`
+	}
+
+	gin.SetMode(gin.TestMode)
+
+	recorder := httptest.NewRecorder()
+	ctx, _ := gin.CreateTestContext(recorder)
+
+	mocksFeedRepository := new(repository.MocksFeedRepository)
+	repository.Feed = mocksFeedRepository
+
+	feedExpected := repository.DBFeed{
+		Id:       uuid.New().String(),
+		Url:      "https://google.com",
+		Disabled: false,
+	}
+
+	mocksFeedRepository.On("GetAllActive").Return([]*repository.DBFeed{&feedExpected})
+
+	GetAllActiveFeeds(ctx)
+
+	mocksFeedRepository.AssertCalled(t, "GetAllActive")
 
 	var res Response
 	_ = json.Unmarshal(recorder.Body.Bytes(), &res)
@@ -57,8 +91,9 @@ func TestGetOneFeed(t *testing.T) {
 
 	feedId := uuid.New().String()
 	feedExpected := repository.DBFeed{
-		Id:  feedId,
-		Url: "https://google.com",
+		Id:       feedId,
+		Url:      "https://google.com",
+		Disabled: false,
 	}
 
 	ctx.Set("feed", &feedExpected)
@@ -86,8 +121,9 @@ func TestDeleteFeed(t *testing.T) {
 	repository.Feed = mocksFeedRepository
 
 	feedExpected := repository.DBFeed{
-		Id:  uuid.New().String(),
-		Url: "https://google.com",
+		Id:       uuid.New().String(),
+		Url:      "https://google.com",
+		Disabled: false,
 	}
 
 	ctx.Set("feed", &feedExpected)
@@ -117,8 +153,9 @@ func TestCreateFeed(t *testing.T) {
 	repository.Feed = mocksFeedRepository
 
 	feedExpected := repository.DBFeed{
-		Id:  uuid.New().String(),
-		Url: "https://google.com",
+		Id:       uuid.New().String(),
+		Url:      "https://google.com",
+		Disabled: false,
 	}
 
 	mocksFeedRepository.On("Create", feedExpected.Url).Return(&feedExpected)
@@ -180,8 +217,9 @@ func TestGetFeedsArticle(t *testing.T) {
 
 	feedId := uuid.New().String()
 	feedExpected := repository.DBFeed{
-		Id:  feedId,
-		Url: "https://google.com",
+		Id:       feedId,
+		Url:      "https://google.com",
+		Disabled: false,
 	}
 
 	ctx.Set("feed", &feedExpected)
@@ -211,5 +249,36 @@ func TestGetFeedsArticle(t *testing.T) {
 	assert.Equal(t, http.StatusOK, recorder.Result().StatusCode, "StatusCode should be OK")
 	assert.NotEmpty(t, res.Articles)
 	assert.Len(t, res.Articles, 1)
+}
 
+func TestDisabledFeed(t *testing.T) {
+	type Response struct {
+		Disabled bool `json:"disabled"`
+	}
+
+	gin.SetMode(gin.TestMode)
+
+	recorder := httptest.NewRecorder()
+	ctx, _ := gin.CreateTestContext(recorder)
+
+	mocksFeedRepository := new(repository.MocksFeedRepository)
+	repository.Feed = mocksFeedRepository
+
+	feedExpected := repository.DBFeed{
+		Id:       uuid.New().String(),
+		Url:      "https://google.com",
+		Disabled: false,
+	}
+
+	ctx.Set("feed", &feedExpected)
+
+	mocksFeedRepository.On("DisableFeed", feedExpected.Id).Return(true)
+
+	DisableFeed(ctx)
+
+	var res Response
+	_ = json.Unmarshal(recorder.Body.Bytes(), &res)
+
+	assert.Equal(t, http.StatusOK, recorder.Result().StatusCode, "StatusCode should be OK")
+	assert.True(t, res.Disabled, "Disabled should be true")
 }

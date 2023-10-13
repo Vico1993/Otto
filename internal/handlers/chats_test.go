@@ -173,8 +173,9 @@ func TestGetChatFeeds(t *testing.T) {
 	repository.Feed = mocksFeedRepository
 
 	feedExpected := repository.DBFeed{
-		Id:  uuid.New().String(),
-		Url: "https://google.com",
+		Id:       uuid.New().String(),
+		Url:      "https://google.com",
+		Disabled: false,
 	}
 
 	chatExpected := repository.DBChat{
@@ -212,8 +213,9 @@ func TestCreateChatFeeds(t *testing.T) {
 	repository.Feed = mocksFeedRepository
 
 	feedExpected := repository.DBFeed{
-		Id:  uuid.New().String(),
-		Url: "https://google.com",
+		Id:       uuid.New().String(),
+		Url:      "https://google.com",
+		Disabled: false,
 	}
 
 	chatExpected := repository.DBChat{
@@ -251,8 +253,9 @@ func TestDeleteChatFeeds(t *testing.T) {
 	repository.Feed = mocksFeedRepository
 
 	feedExpected := repository.DBFeed{
-		Id:  uuid.New().String(),
-		Url: "https://google.com",
+		Id:       uuid.New().String(),
+		Url:      "https://google.com",
+		Disabled: false,
 	}
 
 	chatExpected := repository.DBChat{

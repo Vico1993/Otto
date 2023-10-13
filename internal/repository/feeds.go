@@ -15,6 +15,7 @@ import (
 type DBFeed struct {
 	Id        string    `db:"id"`
 	Url       string    `db:"url"`
+	Disabled  bool      `db:"disabled"`
 	CreatedAt time.Time `db:"created_at"`
 	UpdatedAt time.Time `db:"updated_at"`
 }
@@ -22,12 +23,14 @@ type DBFeed struct {
 func NewFeed(
 	uuid pgtype.UUID,
 	url string,
+	disabled bool,
 	createdAt time.Time,
 	updatedAt time.Time,
 ) *DBFeed {
 	return &DBFeed{
 		Id:        database.TransformUUIDToString(uuid),
 		Url:       url,
+		Disabled:  disabled,
 		CreatedAt: createdAt,
 		UpdatedAt: updatedAt,
 	}
@@ -35,83 +38,45 @@ func NewFeed(
 
 type IFeedRepository interface {
 	GetAll() []*DBFeed
+	GetAllActive() []*DBFeed
 	GetOne(uuid string) *DBFeed
 	Create(url string) *DBFeed
 	Delete(uuid string) bool
 	GetByChatId(uuid string) []string
 	LinkChatAndFeed(feedId string, chatId string) bool
 	UnLinkChatAndFeed(feedId string, chatId string) bool
+	DisableFeed(feedId string) bool
 }
 
 type SFeedRepository struct{}
 
 // Return all Feeds in the DB
 func (rep *SFeedRepository) GetAll() []*DBFeed {
-	var feeds []*DBFeed
+	q := `SELECT id, url, disabled, created_at, updated_at FROM feeds`
 
-	q := `SELECT id, url, created_at, updated_at FROM feeds`
-	rows, err := getConnection().Query(context.Background(), q)
+	return rep.retrieveFeeds(q)
+}
 
-	if err != nil {
-		fmt.Println("Error Query Execute", err.Error())
-	}
+// Return only active feeds
+func (rep *SFeedRepository) GetAllActive() []*DBFeed {
+	q := `SELECT id, url, disabled, created_at, updated_at FROM feeds WHERE disabled=FALSE`
 
-	var id pgtype.UUID
-	var url string
-	var createdAt time.Time
-	var updatedAt time.Time
-	params := []any{&id, &url, &createdAt, &updatedAt}
-	_, err = pgx.ForEachRow(rows, params, func() error {
-		feeds = append(
-			feeds,
-			NewFeed(
-				id,
-				url,
-				createdAt,
-				updatedAt,
-			),
-		)
-
-		return nil
-	})
-
-	if err != nil {
-		fmt.Println("Error ForEach", err.Error())
-	}
-
-	return feeds
+	return rep.retrieveFeeds(q)
 }
 
 // Return one feed, nil if not found
 func (rep *SFeedRepository) GetOne(uuid string) *DBFeed {
-	q := `SELECT id, url, created_at, updated_at FROM feeds where id=$1`
+	q := `SELECT id, url, disabled, created_at, updated_at FROM feeds where id=$1`
 
-	var id pgtype.UUID
-	var url string
-	var createdAt time.Time
-	var updatedAt time.Time
-	err := getConnection().QueryRow(
-		context.Background(),
-		q,
-		uuid,
-	).Scan(
-		&id,
-		&url,
-		&createdAt,
-		&updatedAt,
-	)
+	feeds := rep.retrieveFeeds(q, uuid)
 
-	// if null throw an error
-	if err != nil {
+	fmt.Println(feeds)
+
+	if len(feeds) == 0 {
 		return nil
 	}
 
-	return NewFeed(
-		id,
-		url,
-		createdAt,
-		updatedAt,
-	)
+	return feeds[0]
 }
 
 // Create one feed
@@ -226,6 +191,65 @@ func (rep *SFeedRepository) UnLinkChatAndFeed(feedId string, chatId string) bool
 	return isDelete
 }
 
+func (rep *SFeedRepository) DisableFeed(feedId string) bool {
+	q := `UPDATE feeds SET disabled=TRUE WHERE id=$1;`
+
+	res, err := getConnection().Exec(
+		context.Background(),
+		q,
+		feedId,
+	)
+	if err != nil {
+		fmt.Println("Couldn't disabled feed")
+		fmt.Println(err)
+		return false
+	}
+
+	if res.RowsAffected() == 1 {
+		return true
+	}
+
+	return false
+}
+
+// Wrap logic for retrieving feeds
+func (rep *SFeedRepository) retrieveFeeds(q string, param ...any) []*DBFeed {
+	var feeds []*DBFeed
+
+	rows, err := getConnection().Query(context.Background(), q, param...)
+	if err != nil {
+		fmt.Println("Error Query Execute", err.Error())
+		return feeds
+	}
+
+	var id pgtype.UUID
+	var url string
+	var disabled bool
+	var createdAt time.Time
+	var updatedAt time.Time
+	params := []any{&id, &url, &disabled, &createdAt, &updatedAt}
+	_, err = pgx.ForEachRow(rows, params, func() error {
+		feeds = append(
+			feeds,
+			NewFeed(
+				id,
+				url,
+				disabled,
+				createdAt,
+				updatedAt,
+			),
+		)
+
+		return nil
+	})
+
+	if err != nil {
+		fmt.Println("Error ForEach", err.Error())
+	}
+
+	return feeds
+}
+
 type MocksFeedRepository struct {
 	mock.Mock
 }
@@ -255,6 +279,11 @@ func (m *MocksFeedRepository) GetAll() []*DBFeed {
 	return args.Get(0).([]*DBFeed)
 }
 
+func (m *MocksFeedRepository) GetAllActive() []*DBFeed {
+	args := m.Called()
+	return args.Get(0).([]*DBFeed)
+}
+
 func (m *MocksFeedRepository) GetByChatId(uuid string) []string {
 	args := m.Called(uuid)
 	return args.Get(0).([]string)
@@ -267,5 +296,10 @@ func (m *MocksFeedRepository) LinkChatAndFeed(feedId string, chatId string) bool
 
 func (m *MocksFeedRepository) UnLinkChatAndFeed(feedId string, chatId string) bool {
 	args := m.Called(feedId, chatId)
+	return args.Get(0).(bool)
+}
+
+func (m *MocksFeedRepository) DisableFeed(feedId string) bool {
+	args := m.Called(feedId)
 	return args.Get(0).(bool)
 }

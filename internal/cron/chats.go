@@ -4,11 +4,9 @@ import (
 	"fmt"
 	"net/url"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/Vico1993/Otto/internal/repository"
-	"github.com/Vico1993/Otto/internal/utils"
 )
 
 // Function that will check if need to reset job for chats
@@ -79,16 +77,11 @@ func parsedArticles(articles []*repository.DBArticle, chat *repository.DBChat) {
 	telegram.TelegramUpdateTyping(chat.TelegramChatId, true)
 	for _, article := range articles {
 		article := article
-		matched := isCategoriesAndTagsMatch(chat.Tags, article.Tags)
 		fmt.Println("ChatJob - Chat tags")
 		fmt.Println(chat.Tags)
 
 		fmt.Println("ChatJob - Article tags")
 		fmt.Println(article.Tags)
-		if len(matched) == 0 {
-			fmt.Println("ChatJob - Article doesn't match tags")
-			continue
-		}
 
 		fmt.Println("ChatJob - Article match tags")
 
@@ -104,23 +97,10 @@ func parsedArticles(articles []*repository.DBArticle, chat *repository.DBChat) {
 				article.Title,
 				host,
 				article.Author,
-				matched,
+				article.Tags,
 				article.Link,
 			),
 		)
 	}
 	telegram.TelegramUpdateTyping(chat.TelegramChatId, false)
-}
-
-// find if a list of categories is in tags
-// and return the list of tags present in the categories
-func isCategoriesAndTagsMatch(chatTags []string, articleCategories []string) []string {
-	match := []string{}
-	for _, category := range chatTags {
-		if utils.InSlice(category, articleCategories) {
-			match = append(match, strings.ToLower(category))
-		}
-	}
-
-	return match
 }

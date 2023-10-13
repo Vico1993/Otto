@@ -318,7 +318,8 @@ func (rep *SArticleRepository) GetByChatAndTime(chatId string) []*DBArticle {
 			ON aa.chat_id = c.id
 		WHERE c.id = $1
 		AND aa.id IS NULL -- Make sure is has been published notified yet
-		AND ( a.created_at > c.last_time_parsed OR c.last_time_parsed IS NULL )
+		AND ( a.created_at > c.last_time_parsed OR c.last_time_parsed IS NULL ) -- Check the last time parsed
+		AND c.tags && a.tags -- Only pick articles that are parts of chat tags
 	`
 
 	rows, err := getConnection().Query(context.Background(), q, chatId)

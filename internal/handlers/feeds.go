@@ -29,6 +29,11 @@ func GetAllFeeds(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"feeds": repository.Feed.GetAll()})
 }
 
+// Retrieve active feeds
+func GetAllActiveFeeds(c *gin.Context) {
+	c.JSON(http.StatusOK, gin.H{"feeds": repository.Feed.GetAllActive()})
+}
+
 // Retrieve one Feed
 func GetFeed(c *gin.Context) {
 	feed := c.MustGet("feed").(*repository.DBFeed)
@@ -48,4 +53,11 @@ func GetFeedArticles(c *gin.Context) {
 	feed := c.MustGet("feed").(*repository.DBFeed)
 
 	c.JSON(http.StatusOK, gin.H{"articles": repository.Article.GetByFeedId(feed.Id)})
+}
+
+// Disable a feed
+func DisableFeed(c *gin.Context) {
+	feed := c.MustGet("feed").(*repository.DBFeed)
+
+	c.JSON(http.StatusOK, gin.H{"disabled": repository.Feed.DisableFeed(feed.Id)})
 }

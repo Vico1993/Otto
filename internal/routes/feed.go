@@ -11,12 +11,14 @@ func feedsRoute(r *gin.Engine) {
 	feeds := r.Group("/feeds")
 	{
 		feeds.GET("/", handlers.GetAllFeeds)
+		feeds.GET("/active", handlers.GetAllActiveFeeds)
 		feeds.POST("/", handlers.CreateFeed)
 
 		feedId := feeds.Group("/:feedid", middlewares.ValidFeed())
 		{
 			feedId.GET("/", handlers.GetFeed)
 			feedId.DELETE("/", handlers.DeleteFeed)
+			feedId.PUT("/disable", handlers.DisableFeed)
 
 			feeds := feedId.Group("/articles")
 			{

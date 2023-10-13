@@ -13,7 +13,7 @@ func TestCheckResetFeedNoFeedsInDB(t *testing.T) {
 
 	repository.Feed = feedRepositoryMock
 
-	feedRepositoryMock.On("GetAll").Return([]*repository.DBFeed{})
+	feedRepositoryMock.On("GetAllActive").Return([]*repository.DBFeed{})
 
 	checkFeed()
 
@@ -21,7 +21,7 @@ func TestCheckResetFeedNoFeedsInDB(t *testing.T) {
 	tags := Scheduler.GetAllTags()
 
 	assert.Len(t, tags, 0)
-	feedRepositoryMock.AssertCalled(t, "GetAll")
+	feedRepositoryMock.AssertCalled(t, "GetAllActive")
 	assert.Nil(t, jobs, "Should have no job link to "+feedsTag)
 }
 
@@ -35,11 +35,12 @@ func TestCheckResetSameNumberOfFeed(t *testing.T) {
 	repository.Feed = feedRepositoryMock
 
 	feed := repository.DBFeed{
-		Id:  "1234",
-		Url: "https://google.com",
+		Id:       "1234",
+		Url:      "https://google.com",
+		Disabled: false,
 	}
 
-	feedRepositoryMock.On("GetAll").Return([]*repository.DBFeed{&feed})
+	feedRepositoryMock.On("GetAllActive").Return([]*repository.DBFeed{&feed})
 
 	jobs, _ := Scheduler.FindJobsByTag(feedsTag)
 	assert.Len(t, jobs, 1, "Should have 1 job in the queue at start")
@@ -50,7 +51,7 @@ func TestCheckResetSameNumberOfFeed(t *testing.T) {
 	tags := Scheduler.GetAllTags()
 
 	assert.Len(t, tags, 1)
-	feedRepositoryMock.AssertCalled(t, "GetAll")
+	feedRepositoryMock.AssertCalled(t, "GetAllActive")
 	assert.Len(t, jobs, 1, "Should have 1 job in the queue after call")
 
 	// Reset jobs
@@ -67,15 +68,17 @@ func TestCheckResetAddJob(t *testing.T) {
 	repository.Feed = feedRepositoryMock
 
 	feed1 := repository.DBFeed{
-		Id:  "1234",
-		Url: "https://google1.com",
+		Id:       "1234",
+		Url:      "https://google1.com",
+		Disabled: false,
 	}
 	feed2 := repository.DBFeed{
-		Id:  "5678",
-		Url: "https://google2.com",
+		Id:       "5678",
+		Url:      "https://google2.com",
+		Disabled: false,
 	}
 
-	feedRepositoryMock.On("GetAll").Return([]*repository.DBFeed{&feed1, &feed2})
+	feedRepositoryMock.On("GetAllActive").Return([]*repository.DBFeed{&feed1, &feed2})
 
 	jobs, _ := Scheduler.FindJobsByTag(feedsTag)
 	assert.Len(t, jobs, 1, "Should have 1 job in the queue at start")
@@ -87,7 +90,7 @@ func TestCheckResetAddJob(t *testing.T) {
 
 	assert.Len(t, tags, 2)
 	assert.Equal(t, []string{"feed", "feed"}, tags, "Should have 2 tags call feeds")
-	feedRepositoryMock.AssertCalled(t, "GetAll")
+	feedRepositoryMock.AssertCalled(t, "GetAllActive")
 	assert.Len(t, jobs, 2, "Should have 2 job in the queue after call")
 
 	// Reset jobs

@@ -17,6 +17,11 @@ type createChatTagsPost struct {
 	Tags []string `json:"tags" binding:"required"`
 }
 
+type chatFeedsResponse struct {
+	Id  string `json:"id"`
+	Url string `json:"url"`
+}
+
 // Road to create a Chat
 func CreateChat(c *gin.Context) {
 	var json chatCreatePost
@@ -48,7 +53,15 @@ func DeleteChat(c *gin.Context) {
 func GetChatFeeds(c *gin.Context) {
 	chat := c.MustGet("chat").(*repository.DBChat)
 
-	c.JSON(http.StatusOK, gin.H{"feeds": repository.Feed.GetByChatId(chat.Id)})
+	var feedToReturn []chatFeedsResponse
+	for _, feed := range repository.Feed.GetByChatId(chat.Id) {
+		feedToReturn = append(feedToReturn, chatFeedsResponse{
+			Id:  feed.Id,
+			Url: feed.Url,
+		})
+	}
+
+	c.JSON(http.StatusOK, gin.H{"feeds": feedToReturn})
 }
 
 // Link feed to a chat

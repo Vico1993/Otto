@@ -42,7 +42,7 @@ type IFeedRepository interface {
 	GetOne(uuid string) *DBFeed
 	Create(url string) *DBFeed
 	Delete(uuid string) bool
-	GetByChatId(uuid string) []string
+	GetByChatId(uuid string) []*DBFeed
 	LinkChatAndFeed(feedId string, chatId string) bool
 	UnLinkChatAndFeed(feedId string, chatId string) bool
 	DisableFeed(feedId string) bool
@@ -69,8 +69,6 @@ func (rep *SFeedRepository) GetOne(uuid string) *DBFeed {
 	q := `SELECT id, url, disabled, created_at, updated_at FROM feeds where id=$1`
 
 	feeds := rep.retrieveFeeds(q, uuid)
-
-	fmt.Println(feeds)
 
 	if len(feeds) == 0 {
 		return nil
@@ -118,37 +116,19 @@ func (rep *SFeedRepository) Delete(uuid string) bool {
 }
 
 // Return all Feeds in the DB
-func (rep *SFeedRepository) GetByChatId(uuid string) []string {
-	var feeds []string
-
+func (rep *SFeedRepository) GetByChatId(uuid string) []*DBFeed {
 	q := `SELECT
-		f.url
+		f.id,
+		f.url,
+		f.disabled,
+		f.created_at,
+		f.updated_at
 		FROM feeds as f
 		INNER JOIN chat_feed as cf
 			ON cf.feed_id = f.id
 		WHERE cf.chat_id=$1`
-	rows, err := getConnection().Query(context.Background(), q, uuid)
 
-	if err != nil {
-		fmt.Println("Error Query Execute", err.Error())
-	}
-
-	var url string
-	params := []any{&url}
-	_, err = pgx.ForEachRow(rows, params, func() error {
-		feeds = append(
-			feeds,
-			url,
-		)
-
-		return nil
-	})
-
-	if err != nil {
-		fmt.Println("Error ForEach", err.Error())
-	}
-
-	return feeds
+	return rep.retrieveFeeds(q, uuid)
 }
 
 // Subscribed chat to a feed
@@ -284,9 +264,9 @@ func (m *MocksFeedRepository) GetAllActive() []*DBFeed {
 	return args.Get(0).([]*DBFeed)
 }
 
-func (m *MocksFeedRepository) GetByChatId(uuid string) []string {
+func (m *MocksFeedRepository) GetByChatId(uuid string) []*DBFeed {
 	args := m.Called(uuid)
-	return args.Get(0).([]string)
+	return args.Get(0).([]*DBFeed)
 }
 
 func (m *MocksFeedRepository) LinkChatAndFeed(feedId string, chatId string) bool {

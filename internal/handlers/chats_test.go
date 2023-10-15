@@ -161,7 +161,7 @@ func TestDeleteChat(t *testing.T) {
 
 func TestGetChatFeeds(t *testing.T) {
 	type Response struct {
-		Feeds []*repository.DBFeed `json:"feeds"`
+		Feeds []chatFeedsResponse `json:"feeds"`
 	}
 
 	gin.SetMode(gin.TestMode)
@@ -187,7 +187,7 @@ func TestGetChatFeeds(t *testing.T) {
 
 	ctx.Set("chat", &chatExpected)
 
-	mocksFeedRepository.On("GetByChatId", chatExpected.Id).Return([]string{feedExpected.Url})
+	mocksFeedRepository.On("GetByChatId", chatExpected.Id).Return([]*repository.DBFeed{&feedExpected})
 
 	GetChatFeeds(ctx)
 
@@ -199,6 +199,7 @@ func TestGetChatFeeds(t *testing.T) {
 	assert.Equal(t, http.StatusOK, recorder.Result().StatusCode, "StatusCode should be OK")
 	assert.NotEmpty(t, res.Feeds)
 	assert.Len(t, res.Feeds, 1)
+	assert.Equal(t, []chatFeedsResponse{{Id: feedExpected.Id, Url: feedExpected.Url}}, res.Feeds, "The result should contain the feed url and the feed id")
 }
 
 func TestCreateChatFeeds(t *testing.T) {

@@ -77,13 +77,6 @@ func parsedArticles(articles []*repository.DBArticle, chat *repository.DBChat) {
 	telegram.TelegramUpdateTyping(chat.TelegramChatId, true)
 	for _, article := range articles {
 		article := article
-		fmt.Println("ChatJob - Chat tags")
-		fmt.Println(chat.Tags)
-
-		fmt.Println("ChatJob - Article tags")
-		fmt.Println(article.Tags)
-
-		fmt.Println("ChatJob - Article match tags")
 
 		host := article.Source
 		u, err := url.Parse(article.Source)

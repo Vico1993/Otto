@@ -2,8 +2,8 @@ package cron
 
 import (
 	"errors"
-	"fmt"
 	"net/url"
+	"strings"
 
 	textrank "github.com/DavidBelicza/TextRank/v2"
 	"github.com/Vico1993/Otto/internal/repository"
@@ -39,22 +39,13 @@ func (p *parser) execute(articleRepository repository.IArticleRepository, feedId
 		return errors.New("Couldn't parsed " + url.Host + ": " + err.Error())
 	}
 
-	fmt.Println("FeedJob - Number of element found")
-	fmt.Println(len(feed.Items))
 	for _, item := range feed.Items {
 		item := item
 
-		fmt.Println("FeedJob - Item tags")
-		fmt.Println(item.Categories)
-		itemTags := []string{}
-		if len(item.Categories) == 0 {
-			fmt.Println("FeedJob - No categories found")
+		itemTags := item.Categories
+		if len(itemTags) == 0 {
 			itemTags = p.findTagFromTitle(item.Title)
 		}
-
-		fmt.Println("FeedJob - Final tags for item")
-		fmt.Println(append(item.Categories, itemTags...))
-		fmt.Println(len(append(item.Categories, itemTags...)))
 
 		// Looking into the DB to find if it's a new article...
 		articleFound := articleRepository.GetByTitle(item.Title)
@@ -73,11 +64,25 @@ func (p *parser) execute(articleRepository repository.IArticleRepository, feedId
 			feed.Link,
 			author,
 			item.Link,
-			append(item.Categories, itemTags...),
+			p.cleanCategories(itemTags),
 		)
 	}
 
 	return nil
+}
+
+func (p *parser) cleanCategories(categories []string) []string {
+	cats := []string{}
+
+	for _, category := range categories {
+		if strings.Contains(category, " ") {
+			cats = append(cats, strings.Split(category, " ")...)
+		} else {
+			cats = append(cats, category)
+		}
+	}
+
+	return cats
 }
 
 // Extract important word from the title

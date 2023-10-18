@@ -31,11 +31,13 @@ func main() {
 	// Start cron exec
 	cron.Scheduler.StartAsync()
 
-	// Notify update
-	service.NewTelegramService().TelegramPostMessage(
-		os.Getenv("TELEGRAM_USER_CHAT_ID"),
-		`*Upgrade complete*! Ready to be even smarter and funnier than before. 🤖 🚀 ✨`,
-	)
+	if os.Getenv("TELEGRAM_USER_CHAT_ID") != "" {
+		// Notify update
+		service.NewTelegramService().TelegramPostMessage(
+			os.Getenv("TELEGRAM_USER_CHAT_ID"),
+			`*Upgrade complete*! Ready to be even smarter and funnier than before. 🤖 🚀 ✨`,
+		)
+	}
 
 	r := gin.Default()
 

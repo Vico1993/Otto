@@ -31,8 +31,8 @@ func main() {
 	// Start cron exec
 	cron.Scheduler.StartAsync()
 
+	// Notify update if chat present
 	if os.Getenv("TELEGRAM_USER_CHAT_ID") != "" {
-		// Notify update
 		service.NewTelegramService().TelegramPostMessage(
 			os.Getenv("TELEGRAM_USER_CHAT_ID"),
 			`*Upgrade complete*! Ready to be even smarter and funnier than before. 🤖 🚀 ✨`,

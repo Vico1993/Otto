@@ -34,8 +34,6 @@ Make sure you have the following tools installed on your machine:
 ```sh
 # Bot token given by the @BotFather
 TELEGRAM_BOT_TOKEN=<TELEGRAM_BOT>
-# Used by the bot to know which chat to interact with
-TELEGRAM_USER_CHAT_ID=<CHAT_ID>
 
 #DATABASE postgreSQL url ex:postgresql://username:password@url/db
 DB_URI=<URI>

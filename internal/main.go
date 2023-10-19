@@ -13,6 +13,7 @@ import (
 	"github.com/Vico1993/Otto/internal/repository"
 	"github.com/Vico1993/Otto/internal/routes"
 	"github.com/Vico1993/Otto/internal/service"
+	"github.com/Vico1993/Otto/internal/utils"
 )
 
 func main() {
@@ -33,9 +34,11 @@ func main() {
 
 	// Notify update if chat present
 	if os.Getenv("TELEGRAM_USER_CHAT_ID") != "" {
+		version := utils.RetrieveVersion()
+
 		service.NewTelegramService().TelegramPostMessage(
 			os.Getenv("TELEGRAM_USER_CHAT_ID"),
-			`*Upgrade complete*! Ready to be even smarter and funnier than before. 🤖 🚀 ✨`,
+			`🚀 🚀 [CRON-API] Version: *`+version+`* Succesfully deployed . 🚀 🚀`,
 		)
 	}
 

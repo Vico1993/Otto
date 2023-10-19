@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"net/http"
+	"strings"
 
 	"github.com/Vico1993/Otto/internal/repository"
 	"github.com/gin-gonic/gin"
@@ -98,7 +99,9 @@ func CreateChatTag(c *gin.Context) {
 	}
 
 	newTagList := chat.Tags
-	newTagList = append(newTagList, json.Tags...)
+	for _, tag := range json.Tags {
+		newTagList = append(newTagList, strings.ToLower(tag))
+	}
 
 	repository.Chat.UpdateTags(chat.Id, newTagList)
 

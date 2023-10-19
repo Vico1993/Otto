@@ -75,6 +75,7 @@ func (p *parser) cleanCategories(categories []string) []string {
 	cats := []string{}
 
 	for _, category := range categories {
+		category := strings.ToLower(category)
 		if strings.Contains(category, " ") {
 			cats = append(cats, strings.Split(category, " ")...)
 		} else {
@@ -99,7 +100,7 @@ func (p *parser) findTagFromTitle(title string) []string {
 
 	var tags []string
 	for _, word := range words {
-		tags = append(tags, word.Word)
+		tags = append(tags, strings.ToLower(word.Word))
 	}
 
 	return tags

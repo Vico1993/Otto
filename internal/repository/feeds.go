@@ -85,12 +85,8 @@ func (rep *SFeedRepository) Create(url string) *DBFeed {
 	q := `INSERT INTO feeds (id, url) VALUES ($1, $2);`
 
 	newId := uuid.New().String()
-	_, err := getConnection().Exec(
-		context.Background(),
-		q,
-		newId,
-		url,
-	)
+	_, err := rep.execute(q, newId, url)
+
 	if err != nil {
 		fmt.Println("Couldn't create")
 		fmt.Println(err)

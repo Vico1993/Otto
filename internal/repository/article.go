@@ -152,7 +152,6 @@ func (rep *SArticleRepository) Delete(uuid string) bool {
 
 // Retrieve new Article based on chat last time parsed
 func (rep *SArticleRepository) GetByChatAndTime(chatId string) []*DBArticle {
-	var articles []*DBArticle
 	q := `
 		SELECT
 			a.*
@@ -169,48 +168,7 @@ func (rep *SArticleRepository) GetByChatAndTime(chatId string) []*DBArticle {
 		AND c.tags && a.tags -- Only pick articles that are parts of chat tags
 	`
 
-	rows, err := getConnection().Query(context.Background(), q, chatId)
-
-	if err != nil {
-		fmt.Println("Error Query Execute", err.Error())
-		return articles
-	}
-
-	var id pgtype.UUID
-	var feedId pgtype.UUID
-	var title string
-	var source string
-	var author string
-	var link string
-	var tags []string
-	var createdAt time.Time
-	var updatedAt time.Time
-	params := []any{&id, &feedId, &title, &source, &author, &link, &tags, &createdAt, &updatedAt}
-	_, err = pgx.ForEachRow(rows, params, func() error {
-
-		articles = append(
-			articles,
-			NewArticle(
-				id,
-				feedId,
-				title,
-				source,
-				author,
-				link,
-				tags,
-				createdAt,
-				updatedAt,
-			),
-		)
-
-		return nil
-	})
-
-	if err != nil {
-		fmt.Println("Error ForEach", err.Error())
-	}
-
-	return articles
+	return rep.query(q, chatId)
 }
 
 // Wrap logic for retrieving feeds

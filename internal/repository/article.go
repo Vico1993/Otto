@@ -9,9 +9,10 @@ import (
 	"github.com/Vico1993/Otto/internal/database"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgtype"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/lib/pq"
-	"github.com/stretchr/testify/mock"
 )
 
 type DBArticle struct {
@@ -66,197 +67,44 @@ type IArticleRepository interface {
 	GetByChatAndTime(chatId string) []*DBArticle
 }
 
-type SArticleRepository struct{}
+type SArticleRepository struct {
+	conn *pgxpool.Pool
+}
 
 // Return all Article in the DB
 func (rep *SArticleRepository) GetAll() []*DBArticle {
-	var articles []*DBArticle
-
 	q := `SELECT id, feed_id, title, source, author, link, tags, created_at, updated_at FROM articles`
-	rows, err := getConnection().Query(context.Background(), q)
-
-	if err != nil {
-		fmt.Println("Error Query Execute", err.Error())
-	}
-
-	var id pgtype.UUID
-	var feedId pgtype.UUID
-	var title string
-	var source string
-	var author string
-	var link string
-	var tags []string
-	var createdAt time.Time
-	var updatedAt time.Time
-	params := []any{&id, &feedId, &title, &source, &author, &link, &tags, &createdAt, &updatedAt}
-	_, err = pgx.ForEachRow(rows, params, func() error {
-
-		articles = append(
-			articles,
-			NewArticle(
-				id,
-				feedId,
-				title,
-				source,
-				author,
-				link,
-				tags,
-				createdAt,
-				updatedAt,
-			),
-		)
-
-		return nil
-	})
-
-	if err != nil {
-		fmt.Println("Error ForEach", err.Error())
-	}
-
-	return articles
+	return rep.query(q)
 }
 
 // Return one Article, nil if not found
 func (rep *SArticleRepository) GetOne(uuid string) *DBArticle {
 	q := `SELECT id, feed_id, title, source, author, link, tags, created_at, updated_at FROM articles where id=$1`
+	articles := rep.query(q, uuid)
 
-	var id pgtype.UUID
-	var feedId pgtype.UUID
-	var title string
-	var source string
-	var author string
-	var link string
-	var tags []string
-	var createdAt time.Time
-	var updatedAt time.Time
-	err := getConnection().QueryRow(
-		context.Background(),
-		q,
-		uuid,
-	).Scan(
-		&id,
-		&feedId,
-		&title,
-		&source,
-		&author,
-		&link,
-		&tags,
-		&createdAt,
-		&updatedAt,
-	)
-
-	// if null throw an error
-	if err != nil {
-		fmt.Println(err.Error())
+	if len(articles) == 0 {
 		return nil
 	}
 
-	return NewArticle(
-		id,
-		feedId,
-		title,
-		source,
-		author,
-		link,
-		tags,
-		createdAt,
-		updatedAt,
-	)
+	return articles[0]
 }
 
 // Return one article link to a feed
 func (rep *SArticleRepository) GetByFeedId(uuid string) []*DBArticle {
-	var articles []*DBArticle
-
 	q := `SELECT id, feed_id, title, source, author, link, tags, created_at, updated_at FROM articles where feed_id=$1`
-	rows, err := getConnection().Query(context.Background(), q, uuid)
-
-	// if null throw an error
-	if err != nil {
-		fmt.Println("Error Query Execute", err.Error())
-	}
-
-	var id pgtype.UUID
-	var feedId pgtype.UUID
-	var title string
-	var source string
-	var author string
-	var link string
-	var tags []string
-	var createdAt time.Time
-	var updatedAt time.Time
-	params := []any{&id, &feedId, &title, &source, &author, &link, &tags, &createdAt, &updatedAt}
-	_, err = pgx.ForEachRow(rows, params, func() error {
-
-		articles = append(
-			articles,
-			NewArticle(
-				id,
-				feedId,
-				title,
-				source,
-				author,
-				link,
-				tags,
-				createdAt,
-				updatedAt,
-			),
-		)
-
-		return nil
-	})
-
-	if err != nil {
-		fmt.Println("Error ForEach", err.Error())
-	}
-
-	return articles
+	return rep.query(q, uuid)
 }
 
 // Return one Article by it's title
 func (rep *SArticleRepository) GetByTitle(title string) *DBArticle {
 	q := `SELECT id, feed_id, title, source, author, link, tags, created_at, updated_at FROM articles where title=$1`
+	articles := rep.query(q, title)
 
-	var id pgtype.UUID
-	var feedId pgtype.UUID
-	var source string
-	var link string
-	var author string
-	var tags []string
-	var createdAt time.Time
-	var updatedAt time.Time
-	err := getConnection().QueryRow(
-		context.Background(),
-		q,
-		title,
-	).Scan(
-		&id,
-		&feedId,
-		&title,
-		&source,
-		&author,
-		&link,
-		&tags,
-		&createdAt,
-		&updatedAt,
-	)
-
-	// if null throw an error
-	if err != nil {
+	if len(articles) == 0 {
 		return nil
 	}
 
-	return NewArticle(
-		id,
-		feedId,
-		title,
-		source,
-		author,
-		link,
-		tags,
-		createdAt,
-		updatedAt,
-	)
+	return articles[0]
 }
 
 // Create one article
@@ -264,8 +112,7 @@ func (rep *SArticleRepository) Create(feedId string, title string, source string
 	q := `INSERT INTO articles (id, feed_id, title, source, author, link, tags) VALUES ($1, $2, $3, $4, $5, $6, $7);`
 
 	newId := uuid.New().String()
-	_, err := getConnection().Exec(
-		context.Background(),
+	_, err := rep.execute(
 		q,
 		newId,
 		feedId,
@@ -287,7 +134,7 @@ func (rep *SArticleRepository) Create(feedId string, title string, source string
 // Delete one article from the db
 func (rep *SArticleRepository) Delete(uuid string) bool {
 	q := `DELETE FROM articles where id=$1`
-	res, err := getConnection().Exec(context.Background(), q, uuid)
+	res, err := rep.execute(q, uuid)
 
 	// if null throw an error
 	if err != nil {
@@ -366,53 +213,59 @@ func (rep *SArticleRepository) GetByChatAndTime(chatId string) []*DBArticle {
 	return articles
 }
 
-type MocksArticleRepository struct {
-	mock.Mock
-}
+// Wrap logic for retrieving feeds
+func (rep *SArticleRepository) query(q string, param ...any) []*DBArticle {
+	var articles []*DBArticle
 
-func (m *MocksArticleRepository) Create(feedId string, title string, source string, author string, link string, tags []string) *DBArticle {
-	args := m.Called(feedId, title, source, author, link, tags)
-	return args.Get(0).(*DBArticle)
-}
-
-func (m *MocksArticleRepository) Delete(uuid string) bool {
-	args := m.Called(uuid)
-	return args.Get(0).(bool)
-}
-
-func (m *MocksArticleRepository) GetByTitle(title string) *DBArticle {
-	args := m.Called(title)
-
-	if args.Get(0) == nil {
-		return nil
+	rows, err := rep.conn.Query(context.Background(), q, param...)
+	if err != nil {
+		fmt.Println("Error Query Execute", err.Error())
 	}
 
-	return args.Get(0).(*DBArticle)
-}
+	var id pgtype.UUID
+	var feedId pgtype.UUID
+	var title string
+	var source string
+	var author string
+	var link string
+	var tags []string
+	var createdAt time.Time
+	var updatedAt time.Time
+	params := []any{&id, &feedId, &title, &source, &author, &link, &tags, &createdAt, &updatedAt}
+	_, err = pgx.ForEachRow(rows, params, func() error {
 
-func (m *MocksArticleRepository) GetByFeedId(uuid string) []*DBArticle {
-	args := m.Called(uuid)
+		articles = append(
+			articles,
+			NewArticle(
+				id,
+				feedId,
+				title,
+				source,
+				author,
+				link,
+				tags,
+				createdAt,
+				updatedAt,
+			),
+		)
 
-	return args.Get(0).([]*DBArticle)
-}
-
-func (m *MocksArticleRepository) GetOne(uuid string) *DBArticle {
-	args := m.Called(uuid)
-
-	if args.Get(0) == nil {
 		return nil
+	})
+
+	if err != nil {
+		fmt.Println("Error ForEach", err.Error())
 	}
 
-	return args.Get(0).(*DBArticle)
+	return articles
 }
 
-func (m *MocksArticleRepository) GetAll() []*DBArticle {
-	args := m.Called()
-	return args.Get(0).([]*DBArticle)
-}
+// Wrap logic for executing queries
+func (rep *SArticleRepository) execute(q string, param ...any) (pgconn.CommandTag, error) {
+	res, err := rep.conn.Exec(
+		context.Background(),
+		q,
+		param...,
+	)
 
-func (m *MocksArticleRepository) GetByChatAndTime(chatId string) []*DBArticle {
-	args := m.Called(chatId)
-
-	return args.Get(0).([]*DBArticle)
+	return res, err
 }

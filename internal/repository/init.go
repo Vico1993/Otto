@@ -10,16 +10,21 @@ import (
 )
 
 var (
-	Chat       IChatRepository
-	Feed       IFeedRepository
-	Article    IArticleRepository
-	connection *pgxpool.Pool
+	Chat    IChatRepository
+	Feed    IFeedRepository
+	Article IArticleRepository
 )
 
 func Init() {
-	Chat = &SChatRepository{}
-	Feed = &SFeedRepository{}
-	Article = &SArticleRepository{}
+	Chat = &SChatRepository{
+		conn: getConnection(),
+	}
+	Feed = &SFeedRepository{
+		conn: getConnection(),
+	}
+	Article = &SArticleRepository{
+		conn: getConnection(),
+	}
 
 	fmt.Println("Repository Initiated")
 }
@@ -39,6 +44,5 @@ func getConnection() *pgxpool.Pool {
 		os.Exit(1)
 	}
 
-	connection = conn
-	return connection
+	return conn
 }

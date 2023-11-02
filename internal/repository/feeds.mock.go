@@ -1,13 +1,11 @@
 package repository
 
 import (
-	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/stretchr/testify/mock"
 )
 
 // MOCKS
 type MocksFeedRepository struct {
-	conn *pgxpool.Conn
 	mock.Mock
 }
 

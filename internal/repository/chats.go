@@ -192,7 +192,7 @@ func (rep *SChatRepository) query(q string, param ...any) []*DBChat {
 	var createdAt time.Time
 	var updatedAt time.Time
 	var lastTimeParsed *time.Time
-	params := []any{&id, &telegramChatId, &telegramUserId, &tags, &createdAt, &updatedAt, &lastTimeParsed}
+	params := []any{&id, &telegramChatId, &telegramUserId, &telegramThreadId, &tags, &createdAt, &updatedAt, &lastTimeParsed}
 	_, err = pgx.ForEachRow(rows, params, func() error {
 
 		chats = append(

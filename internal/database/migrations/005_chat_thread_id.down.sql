@@ -1,0 +1,1 @@
+ALTER TABLE "chats" DROP COLUMN "telegram_thread_id";

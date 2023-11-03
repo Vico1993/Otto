@@ -16,19 +16,21 @@ import (
 )
 
 type DBChat struct {
-	Id             string     `db:"id"`
-	TelegramChatId string     `db:"telegram_chat_id"`
-	TelegramUserId string     `db:"telegram_user_id, omitempty"`
-	Tags           []string   `db:"tags"`
-	CreatedAt      time.Time  `db:"created_at"`
-	UpdatedAt      time.Time  `db:"updated_at"`
-	LastTimeParsed *time.Time `db:"last_time_parsed"`
+	Id               string     `db:"id"`
+	TelegramChatId   string     `db:"telegram_chat_id"`
+	TelegramUserId   string     `db:"telegram_user_id, omitempty"`
+	TelegramThreadId string     `db:"telegram_thread_id, omitempty"`
+	Tags             []string   `db:"tags"`
+	CreatedAt        time.Time  `db:"created_at"`
+	UpdatedAt        time.Time  `db:"updated_at"`
+	LastTimeParsed   *time.Time `db:"last_time_parsed"`
 }
 
 func NewChat(
 	uuid pgtype.UUID,
 	telegramChatId string,
 	telegramUserId string,
+	telegramThreadId string,
 	tags []string,
 	createdAt time.Time,
 	updatedAt time.Time,
@@ -40,13 +42,14 @@ func NewChat(
 	}
 
 	return &DBChat{
-		Id:             database.TransformUUIDToString(uuid),
-		TelegramChatId: telegramChatId,
-		TelegramUserId: telegramUserId,
-		Tags:           trimedTags,
-		CreatedAt:      createdAt,
-		UpdatedAt:      updatedAt,
-		LastTimeParsed: lastTimeParsed,
+		Id:               database.TransformUUIDToString(uuid),
+		TelegramChatId:   telegramChatId,
+		TelegramUserId:   telegramUserId,
+		TelegramThreadId: telegramThreadId,
+		Tags:             trimedTags,
+		CreatedAt:        createdAt,
+		UpdatedAt:        updatedAt,
+		LastTimeParsed:   lastTimeParsed,
 	}
 }
 
@@ -54,7 +57,7 @@ type IChatRepository interface {
 	GetAll() []*DBChat
 	GetOne(uuid string) *DBChat
 	GetByTelegramChatId(id string) *DBChat
-	Create(telegramChatId string, telegramUserId string, tags []string) *DBChat
+	Create(telegramChatId string, telegramUserId string, telegramThreadId string, tags []string) *DBChat
 	Delete(uuid string) bool
 	UpdateTags(uuid string, tags []string) bool
 	UpdateParsed(uuid string) bool
@@ -66,13 +69,13 @@ type SChatRepository struct {
 
 // Return all Chats in the DB
 func (rep *SChatRepository) GetAll() []*DBChat {
-	q := `SELECT id, telegram_chat_id, telegram_user_id, tags, created_at, updated_at, last_time_parsed FROM chats`
+	q := `SELECT id, telegram_chat_id, telegram_user_id, telegram_thread_id, tags, created_at, updated_at, last_time_parsed FROM chats`
 	return rep.query(q)
 }
 
 // Return one chat, nil if not found
 func (rep *SChatRepository) GetOne(uuid string) *DBChat {
-	q := `SELECT id, telegram_chat_id, telegram_user_id, tags, created_at, updated_at, last_time_parsed FROM chats where id=$1`
+	q := `SELECT id, telegram_chat_id, telegram_user_id, telegram_thread_id, tags, created_at, updated_at, last_time_parsed FROM chats where id=$1`
 
 	chats := rep.query(q, uuid)
 
@@ -85,7 +88,7 @@ func (rep *SChatRepository) GetOne(uuid string) *DBChat {
 
 // Return one chat, nil if not found
 func (rep *SChatRepository) GetByTelegramChatId(chatId string) *DBChat {
-	q := `SELECT id, telegram_chat_id, telegram_user_id, tags, created_at, updated_at, last_time_parsed FROM chats where telegram_chat_id=$1`
+	q := `SELECT id, telegram_chat_id, telegram_user_id, telegram_thread_id, tags, created_at, updated_at, last_time_parsed FROM chats where telegram_chat_id=$1`
 
 	chats := rep.query(q, chatId)
 
@@ -97,11 +100,16 @@ func (rep *SChatRepository) GetByTelegramChatId(chatId string) *DBChat {
 }
 
 // Create one chat
-func (rep *SChatRepository) Create(telegramChatId string, telegramUserId string, tags []string) *DBChat {
-	q := `INSERT INTO chats (id, telegram_chat_id, telegram_user_id, tags) VALUES ($1, $2, $3, $4);`
+func (rep *SChatRepository) Create(
+	telegramChatId string,
+	telegramUserId string,
+	telegramThreadId string,
+	tags []string,
+) *DBChat {
+	q := `INSERT INTO chats (id, telegram_chat_id, telegram_user_id, telegram_thread_id, tags) VALUES ($1, $2, $3, $4, $5);`
 
 	newId := uuid.New().String()
-	_, err := rep.execute(q, newId, telegramChatId, telegramUserId, pq.Array(tags))
+	_, err := rep.execute(q, newId, telegramChatId, telegramUserId, telegramThreadId, pq.Array(tags))
 
 	if err != nil {
 		fmt.Println("Couldn't create")
@@ -179,6 +187,7 @@ func (rep *SChatRepository) query(q string, param ...any) []*DBChat {
 	var id pgtype.UUID
 	var telegramChatId string
 	var telegramUserId string
+	var telegramThreadId string
 	var tags []string
 	var createdAt time.Time
 	var updatedAt time.Time
@@ -192,6 +201,7 @@ func (rep *SChatRepository) query(q string, param ...any) []*DBChat {
 				id,
 				telegramChatId,
 				telegramUserId,
+				telegramThreadId,
 				tags,
 				createdAt,
 				updatedAt,

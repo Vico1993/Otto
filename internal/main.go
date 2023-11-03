@@ -27,7 +27,7 @@ func main() {
 	repository.Init()
 
 	// Initialisation of the cron
-	cron.Init()
+	// cron.Init()
 
 	// Start cron exec
 	cron.Scheduler.StartAsync()

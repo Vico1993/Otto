@@ -26,16 +26,17 @@ func TestCreateChat(t *testing.T) {
 	mockChatRepository := new(repository.MocksChatRepository)
 	repository.Chat = mockChatRepository
 
+	telegramThreadId := "245"
 	chatExpected := repository.DBChat{
 		Id:               uuid.New().String(),
 		TelegramChatId:   "124",
-		TelegramUserId:   "",
-		TelegramThreadId: "245",
+		TelegramUserId:   nil,
+		TelegramThreadId: &telegramThreadId,
 		Tags:             []string{"test1", "test2"},
 	}
 
 	mockChatRepository.On("GetByTelegramChatId", "124").Return(nil)
-	mockChatRepository.On("Create", chatExpected.TelegramChatId, "", chatExpected.TelegramThreadId, chatExpected.Tags).Return(&chatExpected)
+	mockChatRepository.On("Create", chatExpected.TelegramChatId, "", *chatExpected.TelegramThreadId, chatExpected.Tags).Return(&chatExpected)
 
 	content := map[string]interface{}{
 		"chat_id":   "124",
@@ -48,7 +49,7 @@ func TestCreateChat(t *testing.T) {
 	CreateChat(ctx)
 
 	mockChatRepository.AssertCalled(t, "GetByTelegramChatId", "124")
-	mockChatRepository.AssertCalled(t, "Create", chatExpected.TelegramChatId, "", chatExpected.TelegramThreadId, chatExpected.Tags)
+	mockChatRepository.AssertCalled(t, "Create", chatExpected.TelegramChatId, "", *chatExpected.TelegramThreadId, chatExpected.Tags)
 
 	var res Response
 	_ = json.Unmarshal(recorder.Body.Bytes(), &res)
@@ -109,7 +110,7 @@ func TestCreateChatTelegramChatIdAlreadyUsed(t *testing.T) {
 	chat := repository.DBChat{
 		Id:             uuid.New().String(),
 		TelegramChatId: "124",
-		TelegramUserId: "",
+		TelegramUserId: nil,
 		Tags:           []string{"test1", "test2"},
 	}
 
@@ -144,7 +145,7 @@ func TestDeleteChat(t *testing.T) {
 	chatExpected := repository.DBChat{
 		Id:             uuid.New().String(),
 		TelegramChatId: "124",
-		TelegramUserId: "",
+		TelegramUserId: nil,
 		Tags:           []string{"test1", "test2"},
 	}
 
@@ -183,7 +184,7 @@ func TestGetChatFeeds(t *testing.T) {
 	chatExpected := repository.DBChat{
 		Id:             uuid.New().String(),
 		TelegramChatId: "124",
-		TelegramUserId: "",
+		TelegramUserId: nil,
 		Tags:           []string{"test1", "test2"},
 	}
 
@@ -224,7 +225,7 @@ func TestCreateChatFeeds(t *testing.T) {
 	chatExpected := repository.DBChat{
 		Id:             uuid.New().String(),
 		TelegramChatId: "124",
-		TelegramUserId: "",
+		TelegramUserId: nil,
 		Tags:           []string{"test1", "test2"},
 	}
 
@@ -264,7 +265,7 @@ func TestDeleteChatFeeds(t *testing.T) {
 	chatExpected := repository.DBChat{
 		Id:             uuid.New().String(),
 		TelegramChatId: "124",
-		TelegramUserId: "",
+		TelegramUserId: nil,
 		Tags:           []string{"test1", "test2"},
 	}
 
@@ -297,7 +298,7 @@ func TestGetChatTags(t *testing.T) {
 	chatExpected := repository.DBChat{
 		Id:             uuid.New().String(),
 		TelegramChatId: "124",
-		TelegramUserId: "",
+		TelegramUserId: nil,
 		Tags:           []string{"test1", "test2"},
 	}
 
@@ -329,7 +330,7 @@ func TestCreateChatTag(t *testing.T) {
 	chatExpected := repository.DBChat{
 		Id:             uuid.New().String(),
 		TelegramChatId: "124",
-		TelegramUserId: "",
+		TelegramUserId: nil,
 		Tags:           []string{},
 	}
 
@@ -369,7 +370,7 @@ func TestCreateChatTagMissingTags(t *testing.T) {
 	chatExpected := repository.DBChat{
 		Id:             uuid.New().String(),
 		TelegramChatId: "124",
-		TelegramUserId: "",
+		TelegramUserId: nil,
 		Tags:           []string{},
 	}
 
@@ -405,7 +406,7 @@ func TestDeleteChatTag(t *testing.T) {
 	chatExpected := repository.DBChat{
 		Id:             uuid.New().String(),
 		TelegramChatId: "124",
-		TelegramUserId: "",
+		TelegramUserId: nil,
 		Tags:           []string{"test1", "test2"},
 	}
 
@@ -440,7 +441,7 @@ func TestDeleteChatTagTagNotFound(t *testing.T) {
 	chatExpected := repository.DBChat{
 		Id:             uuid.New().String(),
 		TelegramChatId: "124",
-		TelegramUserId: "",
+		TelegramUserId: nil,
 		Tags:           []string{"test1", "test2"},
 	}
 
@@ -470,7 +471,7 @@ func TestParsedChat(t *testing.T) {
 	chatExpected := repository.DBChat{
 		Id:             uuid.New().String(),
 		TelegramChatId: "124",
-		TelegramUserId: "",
+		TelegramUserId: nil,
 		Tags:           []string{"test1", "test2"},
 	}
 

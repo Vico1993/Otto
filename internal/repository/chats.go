@@ -18,8 +18,8 @@ import (
 type DBChat struct {
 	Id               string     `db:"id"`
 	TelegramChatId   string     `db:"telegram_chat_id"`
-	TelegramUserId   string     `db:"telegram_user_id, omitempty"`
-	TelegramThreadId string     `db:"telegram_thread_id, omitempty"`
+	TelegramUserId   *string    `db:"telegram_user_id, omitempty"`
+	TelegramThreadId *string    `db:"telegram_thread_id, omitempty"`
 	Tags             []string   `db:"tags"`
 	CreatedAt        time.Time  `db:"created_at"`
 	UpdatedAt        time.Time  `db:"updated_at"`
@@ -29,8 +29,8 @@ type DBChat struct {
 func NewChat(
 	uuid pgtype.UUID,
 	telegramChatId string,
-	telegramUserId string,
-	telegramThreadId string,
+	telegramUserId *string,
+	telegramThreadId *string,
 	tags []string,
 	createdAt time.Time,
 	updatedAt time.Time,
@@ -186,8 +186,8 @@ func (rep *SChatRepository) query(q string, param ...any) []*DBChat {
 
 	var id pgtype.UUID
 	var telegramChatId string
-	var telegramUserId string
-	var telegramThreadId string
+	var telegramUserId *string
+	var telegramThreadId *string
 	var tags []string
 	var createdAt time.Time
 	var updatedAt time.Time

@@ -9,9 +9,10 @@ import (
 )
 
 type chatCreatePost struct {
-	ChatId string   `json:"chat_id" binding:"required"`
-	UserId string   `json:"user_id"`
-	Tags   []string `json:"tags" binding:"required"`
+	ChatId   string   `json:"chat_id" binding:"required"`
+	UserId   string   `json:"user_id"`
+	ThreadId string   `json:"thread_id"`
+	Tags     []string `json:"tags" binding:"required"`
 }
 
 type createChatTagsPost struct {
@@ -38,7 +39,7 @@ func CreateChat(c *gin.Context) {
 		return
 	}
 
-	chat := repository.Chat.Create(json.ChatId, json.UserId, json.Tags)
+	chat := repository.Chat.Create(json.ChatId, json.UserId, json.ThreadId, json.Tags)
 
 	c.JSON(http.StatusOK, gin.H{"chat": chat})
 }

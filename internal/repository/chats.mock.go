@@ -6,8 +6,8 @@ type MocksChatRepository struct {
 	mock.Mock
 }
 
-func (m *MocksChatRepository) Create(telegramChatId string, telegramUserId string, tags []string) *DBChat {
-	args := m.Called(telegramChatId, telegramUserId, tags)
+func (m *MocksChatRepository) Create(telegramChatId string, telegramUserId string, telegramThreadId string, tags []string) *DBChat {
+	args := m.Called(telegramChatId, telegramUserId, telegramThreadId, tags)
 	return args.Get(0).(*DBChat)
 }
 

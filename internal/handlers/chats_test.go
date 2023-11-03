@@ -27,18 +27,20 @@ func TestCreateChat(t *testing.T) {
 	repository.Chat = mockChatRepository
 
 	chatExpected := repository.DBChat{
-		Id:             uuid.New().String(),
-		TelegramChatId: "124",
-		TelegramUserId: "",
-		Tags:           []string{"test1", "test2"},
+		Id:               uuid.New().String(),
+		TelegramChatId:   "124",
+		TelegramUserId:   "",
+		TelegramThreadId: "245",
+		Tags:             []string{"test1", "test2"},
 	}
 
 	mockChatRepository.On("GetByTelegramChatId", "124").Return(nil)
-	mockChatRepository.On("Create", chatExpected.TelegramChatId, "", chatExpected.Tags).Return(&chatExpected)
+	mockChatRepository.On("Create", chatExpected.TelegramChatId, "", chatExpected.TelegramThreadId, chatExpected.Tags).Return(&chatExpected)
 
 	content := map[string]interface{}{
-		"chat_id": "124",
-		"tags":    []string{"test1", "test2"},
+		"chat_id":   "124",
+		"thread_id": "245",
+		"tags":      []string{"test1", "test2"},
 	}
 
 	utils.MockPostRequest(ctx, content, false)
@@ -46,7 +48,7 @@ func TestCreateChat(t *testing.T) {
 	CreateChat(ctx)
 
 	mockChatRepository.AssertCalled(t, "GetByTelegramChatId", "124")
-	mockChatRepository.AssertCalled(t, "Create", chatExpected.TelegramChatId, "", chatExpected.Tags)
+	mockChatRepository.AssertCalled(t, "Create", chatExpected.TelegramChatId, "", chatExpected.TelegramThreadId, chatExpected.Tags)
 
 	var res Response
 	_ = json.Unmarshal(recorder.Body.Bytes(), &res)

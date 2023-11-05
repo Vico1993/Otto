@@ -121,8 +121,15 @@ func (rep *SChatRepository) Create(
 ) *DBChat {
 	q := `INSERT INTO chats (id, telegram_chat_id, telegram_user_id, telegram_thread_id, tags) VALUES ($1, $2, $3, $4, $5);`
 
+	var thread *string
+	if telegramThreadId == "" {
+		thread = nil
+	} else {
+		thread = &telegramThreadId
+	}
+
 	newId := uuid.New().String()
-	_, err := rep.execute(q, newId, telegramChatId, telegramUserId, telegramThreadId, pq.Array(tags))
+	_, err := rep.execute(q, newId, telegramChatId, telegramUserId, thread, pq.Array(tags))
 
 	if err != nil {
 		fmt.Println("Couldn't create")

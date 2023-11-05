@@ -127,9 +127,10 @@ func TestParsedArticlesWith1Article(t *testing.T) {
 	}
 
 	chat := repository.DBChat{
-		Id:             "12",
-		TelegramChatId: "12314",
-		Tags:           []string{"tag2"},
+		Id:               "12",
+		TelegramChatId:   "12314",
+		TelegramThreadId: nil,
+		Tags:             []string{"tag2"},
 	}
 
 	templates = []string{"MESSAGE"}
@@ -138,11 +139,45 @@ func TestParsedArticlesWith1Article(t *testing.T) {
 	telegram = mockTelegramService
 	mockTelegramService.On("TelegramUpdateTyping", chat.TelegramChatId, true).Return()
 	mockTelegramService.On("TelegramUpdateTyping", chat.TelegramChatId, false).Return()
-	mockTelegramService.On("TelegramPostMessage", chat.TelegramChatId, "MESSAGE").Return()
+	mockTelegramService.On("TelegramPostMessage", chat.TelegramChatId, "", "MESSAGE").Return()
 
 	parsedArticles([]*repository.DBArticle{&article}, &chat)
 
 	mockTelegramService.AssertCalled(t, "TelegramUpdateTyping", chat.TelegramChatId, true)
 	mockTelegramService.AssertCalled(t, "TelegramUpdateTyping", chat.TelegramChatId, false)
-	mockTelegramService.AssertCalled(t, "TelegramPostMessage", chat.TelegramChatId, "MESSAGE")
+	mockTelegramService.AssertCalled(t, "TelegramPostMessage", chat.TelegramChatId, "", "MESSAGE")
+}
+
+func TestParsedArticlesWith1ArticleAnd1ThreadId(t *testing.T) {
+	article := repository.DBArticle{
+		Id:     uuid.New().String(),
+		FeedId: uuid.New().String(),
+		Title:  "Super Title",
+		Source: "Title",
+		Author: "Unknown",
+		Link:   "https://super.com/title",
+		Tags:   []string{"tag1", "tag2"},
+	}
+
+	threadId := "134"
+	chat := repository.DBChat{
+		Id:               "12",
+		TelegramChatId:   "12314",
+		TelegramThreadId: &threadId,
+		Tags:             []string{"tag2"},
+	}
+
+	templates = []string{"MESSAGE"}
+
+	mockTelegramService := new(service.MocksTelegramService)
+	telegram = mockTelegramService
+	mockTelegramService.On("TelegramUpdateTyping", chat.TelegramChatId, true).Return()
+	mockTelegramService.On("TelegramUpdateTyping", chat.TelegramChatId, false).Return()
+	mockTelegramService.On("TelegramPostMessage", chat.TelegramChatId, threadId, "MESSAGE").Return()
+
+	parsedArticles([]*repository.DBArticle{&article}, &chat)
+
+	mockTelegramService.AssertCalled(t, "TelegramUpdateTyping", chat.TelegramChatId, true)
+	mockTelegramService.AssertCalled(t, "TelegramUpdateTyping", chat.TelegramChatId, false)
+	mockTelegramService.AssertCalled(t, "TelegramPostMessage", chat.TelegramChatId, threadId, "MESSAGE")
 }

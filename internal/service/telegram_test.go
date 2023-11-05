@@ -30,7 +30,31 @@ func TestTelegramPostMessage(t *testing.T) {
 		baseUrl: server.URL,
 	}
 
-	s.TelegramPostMessage("123", "Test message")
+	s.TelegramPostMessage("123", "", "Test message")
+}
+
+func TestTelegramPostMessageWithThreadId(t *testing.T) {
+	// Set up a mock server to receive the HTTP POST request
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, "/sendMessage", r.URL.String(), "Unexpected URL")
+
+		data := url.Values{}
+		data.Set("chat_id", "123")
+		data.Set("reply_to_message_id", "124")
+		data.Set("text", "Test message")
+
+		assert.Equal(t, data.Encode(), "chat_id=123&reply_to_message_id=124&text=Test+message", "Body is not matching the expected body")
+
+		// Respond with a success status code
+		w.WriteHeader(http.StatusOK)
+	}))
+	defer server.Close()
+
+	s := TelegramService{
+		baseUrl: server.URL,
+	}
+
+	s.TelegramPostMessage("123", "124", "Test message")
 }
 
 func TestTelegramSetTypingToTrue(t *testing.T) {

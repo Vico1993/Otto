@@ -84,8 +84,14 @@ func parsedArticles(articles []*repository.DBArticle, chat *repository.DBChat) {
 			host = u.Host
 		}
 
+		threaId := ""
+		if chat.TelegramThreadId != nil {
+			threaId = *chat.TelegramThreadId
+		}
+
 		telegram.TelegramPostMessage(
 			chat.TelegramChatId,
+			threaId,
 			BuildMessage(
 				article.Title,
 				host,

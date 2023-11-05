@@ -27,7 +27,7 @@ func main() {
 	repository.Init()
 
 	// Initialisation of the cron
-	// cron.Init()
+	cron.Init()
 
 	// Start cron exec
 	cron.Scheduler.StartAsync()
@@ -38,6 +38,7 @@ func main() {
 
 		service.NewTelegramService().TelegramPostMessage(
 			os.Getenv("TELEGRAM_USER_CHAT_ID"),
+			"",
 			`🚀 🚀 [CRON-API] Version: *`+version+`* Succesfully deployed . 🚀 🚀`,
 		)
 	}

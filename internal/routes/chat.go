@@ -13,24 +13,29 @@ func chatsRoute(r *gin.Engine) {
 		chats.POST("/", handlers.CreateChat)
 
 		chatId := chats.Group("/:chatid", middlewares.ValidChat())
-		{
-			chatId.DELETE("/", handlers.DeleteChat)
-			chatId.GET("/parsed", handlers.ParsedChat)
+		addChatGroup(chatId)
 
-			feeds := chatId.Group("/feeds")
-			{
-				feeds.GET("/", handlers.GetChatFeeds)
-				feeds.POST("/:feedid", middlewares.ValidFeed(), handlers.CreateChatFeed)
-				feeds.DELETE("/:feedid", middlewares.ValidFeed(), handlers.DeleteChatFeed)
-			}
-
-			tags := chatId.Group("/tags")
-			{
-				tags.GET("/", handlers.GetChatTags)
-				tags.POST("/", handlers.CreateChatTag)
-				tags.DELETE("/:tag", handlers.DeleteChatTag)
-			}
-		}
+		threadId := chats.Group("/:chatid/:threadid", middlewares.ValidChat())
+		addChatGroup(threadId)
 	}
 
+}
+
+func addChatGroup(group *gin.RouterGroup) {
+	group.DELETE("/", handlers.DeleteChat)
+	group.GET("/parsed", handlers.ParsedChat)
+
+	feeds := group.Group("/feeds")
+	{
+		feeds.GET("/", handlers.GetChatFeeds)
+		feeds.POST("/:feedid", middlewares.ValidFeed(), handlers.CreateChatFeed)
+		feeds.DELETE("/:feedid", middlewares.ValidFeed(), handlers.DeleteChatFeed)
+	}
+
+	tags := group.Group("/tags")
+	{
+		tags.GET("/", handlers.GetChatTags)
+		tags.POST("/", handlers.CreateChatTag)
+		tags.DELETE("/:tag", handlers.DeleteChatTag)
+	}
 }

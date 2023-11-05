@@ -36,6 +36,16 @@ func (m *MocksChatRepository) GetByTelegramChatId(chatId string) *DBChat {
 	return args.Get(0).(*DBChat)
 }
 
+func (m *MocksChatRepository) GetByTelegramChatIdAndThreadId(chatId string, threadId string) *DBChat {
+	args := m.Called(chatId, threadId)
+
+	if args.Get(0) == nil {
+		return nil
+	}
+
+	return args.Get(0).(*DBChat)
+}
+
 func (m *MocksChatRepository) GetAll() []*DBChat {
 	args := m.Called()
 	return args.Get(0).([]*DBChat)

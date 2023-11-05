@@ -35,7 +35,7 @@ func TestCreateChat(t *testing.T) {
 		Tags:             []string{"test1", "test2"},
 	}
 
-	mockChatRepository.On("GetByTelegramChatId", "124").Return(nil)
+	mockChatRepository.On("GetByTelegramChatIdAndThreadId", "124", "245").Return(nil)
 	mockChatRepository.On("Create", chatExpected.TelegramChatId, "", *chatExpected.TelegramThreadId, chatExpected.Tags).Return(&chatExpected)
 
 	content := map[string]interface{}{
@@ -48,7 +48,8 @@ func TestCreateChat(t *testing.T) {
 
 	CreateChat(ctx)
 
-	mockChatRepository.AssertCalled(t, "GetByTelegramChatId", "124")
+	mockChatRepository.AssertCalled(t, "GetByTelegramChatIdAndThreadId", "124", "245")
+	mockChatRepository.AssertNotCalled(t, "GetByTelegramChatId")
 	mockChatRepository.AssertCalled(t, "Create", chatExpected.TelegramChatId, "", *chatExpected.TelegramThreadId, chatExpected.Tags)
 
 	var res Response
@@ -121,6 +122,7 @@ func TestCreateChatTelegramChatIdAlreadyUsed(t *testing.T) {
 	CreateChat(ctx)
 
 	mockChatRepository.AssertCalled(t, "GetByTelegramChatId", "124")
+	mockChatRepository.AssertNotCalled(t, "GetByTelegramChatIdAndThreadId")
 	mockChatRepository.AssertNotCalled(t, "Create")
 
 	var res Response
@@ -153,7 +155,7 @@ func TestCreateChatTelegramChatIdAlreadyUsedBuThreadIdNotUsed(t *testing.T) {
 		Tags:             []string{"test1", "test2"},
 	}
 
-	mockChatRepository.On("GetByTelegramChatId", "124").Return(&chatExpected)
+	mockChatRepository.On("GetByTelegramChatIdAndThreadId", "124", "240").Return(nil)
 	mockChatRepository.On("Create", chatExpected.TelegramChatId, "", newTelegramThreadId, chatExpected.Tags).Return(&chatExpected)
 
 	content := map[string]interface{}{
@@ -166,7 +168,8 @@ func TestCreateChatTelegramChatIdAlreadyUsedBuThreadIdNotUsed(t *testing.T) {
 
 	CreateChat(ctx)
 
-	mockChatRepository.AssertCalled(t, "GetByTelegramChatId", "124")
+	mockChatRepository.AssertCalled(t, "GetByTelegramChatIdAndThreadId", "124", "240")
+	mockChatRepository.AssertNotCalled(t, "GetByTelegramChatId")
 	mockChatRepository.AssertCalled(t, "Create", chatExpected.TelegramChatId, "", newTelegramThreadId, chatExpected.Tags)
 
 	var res Response

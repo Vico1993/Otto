@@ -40,10 +40,10 @@ func TestTelegramPostMessageWithThreadId(t *testing.T) {
 
 		data := url.Values{}
 		data.Set("chat_id", "123")
-		data.Set("top_msg_id", "124")
+		data.Set("reply_to_message_id", "124")
 		data.Set("text", "Test message")
 
-		assert.Equal(t, data.Encode(), "chat_id=123&text=Test+message&top_msg_id=124", "Body is not matching the expected body")
+		assert.Equal(t, data.Encode(), "chat_id=123&reply_to_message_id=124&text=Test+message", "Body is not matching the expected body")
 
 		// Respond with a success status code
 		w.WriteHeader(http.StatusOK)

@@ -10,7 +10,7 @@ import (
 )
 
 type ITelegramService interface {
-	TelegramPostMessage(chatId string, text string)
+	TelegramPostMessage(chatId string, threadId string, text string)
 	TelegramUpdateTyping(chatId string, val bool)
 	GetBaseUrl() string
 }
@@ -26,12 +26,16 @@ func NewTelegramService() ITelegramService {
 	}
 }
 
-func (s *TelegramService) TelegramPostMessage(chatId string, text string) {
+func (s *TelegramService) TelegramPostMessage(chatId string, threadId string, text string) {
 	data := buildData(map[string]string{
 		"chat_id":    chatId,
 		"text":       text,
 		"parse_mode": "markdown",
 	})
+
+	if threadId != "" {
+		data.Set("top_msg_id", threadId)
+	}
 
 	_, err := http.Post(
 		s.baseUrl+"/sendMessage",
@@ -80,8 +84,8 @@ type MocksTelegramService struct {
 	mock.Mock
 }
 
-func (m *MocksTelegramService) TelegramPostMessage(chatId string, text string) {
-	m.Called(chatId, text)
+func (m *MocksTelegramService) TelegramPostMessage(chatId string, threadId string, text string) {
+	m.Called(chatId, threadId, text)
 }
 
 func (m *MocksTelegramService) TelegramUpdateTyping(chatId string, val bool) {

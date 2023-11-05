@@ -56,7 +56,8 @@ func NewChat(
 type IChatRepository interface {
 	GetAll() []*DBChat
 	GetOne(uuid string) *DBChat
-	GetByTelegramChatId(id string) *DBChat
+	GetByTelegramChatId(chatId string) *DBChat
+	GetByTelegramChatIdAndThreadId(chatId string, threadId string) *DBChat
 	Create(telegramChatId string, telegramUserId string, telegramThreadId string, tags []string) *DBChat
 	Delete(uuid string) bool
 	UpdateTags(uuid string, tags []string) bool
@@ -92,6 +93,18 @@ func (rep *SChatRepository) GetByTelegramChatId(chatId string) *DBChat {
 
 	chats := rep.query(q, chatId)
 
+	if len(chats) == 0 {
+		return nil
+	}
+
+	return chats[0]
+}
+
+// Return one chat by it's id and thread id, nil if not found
+func (rep *SChatRepository) GetByTelegramChatIdAndThreadId(chatId string, threadId string) *DBChat {
+	q := `SELECT id, telegram_chat_id, telegram_user_id, telegram_thread_id, tags, created_at, updated_at, last_time_parsed FROM chats where telegram_chat_id=$1 and telegram_thread_id=$2`
+
+	chats := rep.query(q, chatId, threadId)
 	if len(chats) == 0 {
 		return nil
 	}

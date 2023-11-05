@@ -33,14 +33,20 @@ func CreateChat(c *gin.Context) {
 	}
 
 	// Check if chatId already in DB
-	chatDb := repository.Chat.GetByTelegramChatId(json.ChatId)
+	// Check if chatId and threadId already exist in DB
+	var chatDb *repository.DBChat
+	if json.ThreadId != "" {
+		chatDb = repository.Chat.GetByTelegramChatIdAndThreadId(json.ChatId, json.ThreadId)
+	} else {
+		chatDb = repository.Chat.GetByTelegramChatId(json.ChatId)
+	}
+
 	if chatDb != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Chat id already used"})
 		return
 	}
 
 	chat := repository.Chat.Create(json.ChatId, json.UserId, json.ThreadId, json.Tags)
-
 	c.JSON(http.StatusOK, gin.H{"chat": chat})
 }
 

@@ -108,10 +108,11 @@ func TestCreateChatTelegramChatIdAlreadyUsed(t *testing.T) {
 	}
 
 	chat := repository.DBChat{
-		Id:             uuid.New().String(),
-		TelegramChatId: "124",
-		TelegramUserId: nil,
-		Tags:           []string{"test1", "test2"},
+		Id:               uuid.New().String(),
+		TelegramChatId:   "124",
+		TelegramUserId:   nil,
+		TelegramThreadId: nil,
+		Tags:             []string{"test1", "test2"},
 	}
 
 	utils.MockPostRequest(ctx, content, false)
@@ -127,6 +128,53 @@ func TestCreateChatTelegramChatIdAlreadyUsed(t *testing.T) {
 
 	assert.Equal(t, http.StatusBadRequest, recorder.Result().StatusCode, "StatusCode should be 400 Bad Request")
 	assert.Equal(t, "Chat id already used", res.Error)
+}
+
+func TestCreateChatTelegramChatIdAlreadyUsedBuThreadIdNotUsed(t *testing.T) {
+	type Response struct {
+		Chat *repository.DBChat `json:"chat"`
+	}
+
+	gin.SetMode(gin.TestMode)
+
+	recorder := httptest.NewRecorder()
+	ctx, _ := gin.CreateTestContext(recorder)
+
+	mockChatRepository := new(repository.MocksChatRepository)
+	repository.Chat = mockChatRepository
+
+	telegramThreadId := "245"
+	newTelegramThreadId := "240"
+	chatExpected := repository.DBChat{
+		Id:               uuid.New().String(),
+		TelegramChatId:   "124",
+		TelegramUserId:   nil,
+		TelegramThreadId: &telegramThreadId,
+		Tags:             []string{"test1", "test2"},
+	}
+
+	mockChatRepository.On("GetByTelegramChatId", "124").Return(&chatExpected)
+	mockChatRepository.On("Create", chatExpected.TelegramChatId, "", newTelegramThreadId, chatExpected.Tags).Return(&chatExpected)
+
+	content := map[string]interface{}{
+		"chat_id":   "124",
+		"thread_id": newTelegramThreadId,
+		"tags":      []string{"test1", "test2"},
+	}
+
+	utils.MockPostRequest(ctx, content, false)
+
+	CreateChat(ctx)
+
+	mockChatRepository.AssertCalled(t, "GetByTelegramChatId", "124")
+	mockChatRepository.AssertCalled(t, "Create", chatExpected.TelegramChatId, "", newTelegramThreadId, chatExpected.Tags)
+
+	var res Response
+	_ = json.Unmarshal(recorder.Body.Bytes(), &res)
+
+	assert.Equal(t, http.StatusOK, recorder.Result().StatusCode, "StatusCode should be OK")
+	assert.NotEmpty(t, res.Chat)
+	assert.Empty(t, res.Chat.TelegramUserId, "Parameter is optional, and should be empty")
 }
 
 func TestDeleteChat(t *testing.T) {

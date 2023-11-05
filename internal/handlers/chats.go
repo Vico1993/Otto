@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"net/http"
 	"strings"
 
@@ -33,8 +34,9 @@ func CreateChat(c *gin.Context) {
 	}
 
 	// Check if chatId already in DB
+	fmt.Println(json.ThreadId)
 	chatDb := repository.Chat.GetByTelegramChatId(json.ChatId)
-	if chatDb != nil {
+	if (chatDb != nil && chatDb.TelegramThreadId == &json.ThreadId) || (chatDb != nil && json.ThreadId == "") {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Chat id already used"})
 		return
 	}

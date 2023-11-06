@@ -335,6 +335,73 @@ func TestExecuteWithCategorySpace(t *testing.T) {
 	assert.Nil(t, err, "The error object should be nil")
 }
 
+func TestExecuteWithCategoryComa(t *testing.T) {
+	p := &parser{
+		url:  "https://test.com/feed",
+		tags: []string{},
+	}
+
+	item := &gofeed.Item{
+		Title:      "Super Title for an Article",
+		Published:  "2023-06-04",
+		Link:       "https://test.com/article-1",
+		Categories: []string{"tag2,btc"},
+		Authors: []*gofeed.Person{
+			{
+				Name: "Victor",
+			},
+		},
+	}
+
+	f := &gofeed.Feed{
+		Title: "Super Test",
+		Items: []*gofeed.Item{
+			item,
+		},
+	}
+
+	oldParseUrl := parseUrl
+	defer func() { parseUrl = oldParseUrl }()
+
+	parseUrl = func(url string) (*gofeed.Feed, error) {
+		return f, nil
+	}
+
+	// Mock Article Repository
+	articleRepositoryMock := new(repository.MocksArticleRepository)
+
+	// Article repository return nil on Find
+	articleRepositoryMock.On("GetByTitle", item.Title).Return(nil)
+
+	feedId := uuid.New().String()
+	articleExpected := repository.DBArticle{
+		Id:     uuid.New().String(),
+		FeedId: feedId,
+		Title:  item.Title,
+		Source: f.Title,
+		Author: item.Authors[0].Name,
+		Link:   item.Link,
+		Tags:   []string{"tag2", "btc"},
+	}
+
+	// Article repository return an article on Create
+	articleRepositoryMock.On("Create",
+		feedId,
+		item.Title,
+		f.Link,
+		item.Authors[0].Name,
+		item.Link,
+		[]string{"tag2", "btc"},
+	).Return(&articleExpected)
+
+	err := p.execute(articleRepositoryMock, feedId)
+
+	articleRepositoryMock.AssertCalled(t, "GetByTitle", item.Title)
+	articleRepositoryMock.AssertCalled(t, "Create", feedId, item.Title, f.Link, item.Authors[0].Name, item.Link, []string{"tag2", "btc"})
+
+	assert.Nil(t, err, "The error object should be nil")
+}
+
 func TestExecuteWithUpperCaseCategory(t *testing.T) {
 	p := &parser{
 		url:  "https://test.com/feed",

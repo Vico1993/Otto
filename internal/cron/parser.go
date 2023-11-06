@@ -78,6 +78,8 @@ func (p *parser) cleanCategories(categories []string) []string {
 		category := strings.ToLower(category)
 		if strings.Contains(category, " ") {
 			cats = append(cats, strings.Split(category, " ")...)
+		} else if strings.Contains(category, ",") {
+			cats = append(cats, strings.Split(category, ",")...)
 		} else {
 			cats = append(cats, category)
 		}

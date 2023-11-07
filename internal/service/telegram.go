@@ -1,7 +1,6 @@
 package service
 
 import (
-	"fmt"
 	"net/http"
 	"net/url"
 	"os"
@@ -37,8 +36,6 @@ func (s *TelegramService) TelegramPostMessage(chatId string, threadId string, te
 	if threadId != "" {
 		data.Set("reply_to_message_id", threadId)
 	}
-
-	fmt.Println(data.Encode())
 
 	_, err := http.Post(
 		s.baseUrl+"/sendMessage",

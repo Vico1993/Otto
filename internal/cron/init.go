@@ -16,13 +16,11 @@ var telegram = service.NewTelegramService()
 
 var mainTag = "main"
 var feedsTag = "feed"
-var chatsTag = "chat"
 
 func Init() {
 	_, err := Scheduler.Every(1).Hour().Tag(mainTag).Do(func() {
 		// Feeds
 		checkFeed()
-		checkChat()
 	})
 
 	if err != nil {

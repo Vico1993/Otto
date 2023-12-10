@@ -5,14 +5,12 @@ import (
 	"math"
 	"time"
 
-	"github.com/Vico1993/Otto/internal/service"
 	"github.com/go-co-op/gocron"
 	"github.com/mmcdole/gofeed"
 )
 
 var Scheduler = gocron.NewScheduler(time.UTC)
 var gofeedParser = gofeed.NewParser()
-var telegram = service.NewTelegramService()
 
 var mainTag = "main"
 var feedsTag = "feed"

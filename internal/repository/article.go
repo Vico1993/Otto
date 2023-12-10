@@ -154,7 +154,15 @@ func (rep *SArticleRepository) Delete(uuid string) bool {
 func (rep *SArticleRepository) GetByChatAndTime(chatId string) []*DBArticle {
 	q := `
 		SELECT
-			a.*
+			a.id,
+			a.feed_id,
+			a.title,
+			a.source,
+			a.author,
+			a.link,
+			a.tags,
+			a.created_at,
+			a.updated_at
 		FROM CHATS as c
 		INNER JOIN chat_feed as cf
 			ON cf.chat_id = c.id

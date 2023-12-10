@@ -11,6 +11,7 @@ func chatsRoute(r *gin.Engine) {
 	chats := r.Group("/chats")
 	{
 		chats.POST("/", handlers.CreateChat)
+		chats.GET("/", handlers.GetAllChats)
 
 		chatId := chats.Group("/:chatid", middlewares.ValidChat())
 		addChatGroup(chatId)
@@ -37,5 +38,10 @@ func addChatGroup(group *gin.RouterGroup) {
 		tags.GET("/", handlers.GetChatTags)
 		tags.POST("/", handlers.CreateChatTag)
 		tags.DELETE("/:tag", handlers.DeleteChatTag)
+	}
+
+	articles := group.Group("/articles")
+	{
+		articles.GET("/latest", handlers.GetLatestArticleFromChat)
 	}
 }

@@ -536,3 +536,82 @@ func TestParsedChat(t *testing.T) {
 
 	assert.Equal(t, http.StatusNoContent, recorder.Result().StatusCode, "StatusCode should be 204 no content")
 }
+
+func TestGetAll(t *testing.T) {
+	type Response struct {
+		Chats []*repository.DBChat `json:"chats"`
+	}
+
+	gin.SetMode(gin.TestMode)
+
+	recorder := httptest.NewRecorder()
+	ctx, _ := gin.CreateTestContext(recorder)
+
+	mockChatRepository := new(repository.MocksChatRepository)
+	repository.Chat = mockChatRepository
+
+	chatExpected := repository.DBChat{
+		Id:             uuid.New().String(),
+		TelegramChatId: "124",
+		TelegramUserId: nil,
+		Tags:           []string{"test1", "test2"},
+	}
+
+	mockChatRepository.On("GetAll").Return([]*repository.DBChat{&chatExpected})
+
+	GetAllChats(ctx)
+
+	var res Response
+	_ = json.Unmarshal(recorder.Body.Bytes(), &res)
+
+	mockChatRepository.AssertCalled(t, "GetAll")
+	assert.Equal(t, http.StatusOK, recorder.Result().StatusCode, "StatusCode should be OK")
+	assert.NotEmpty(t, res.Chats)
+	assert.Len(t, res.Chats, 1, "Chats array should contain 1 element")
+}
+
+func TestGetLatestArticleFromChat(t *testing.T) {
+	type Response struct {
+		Articles []*repository.DBArticle `json:"articles"`
+	}
+
+	gin.SetMode(gin.TestMode)
+
+	recorder := httptest.NewRecorder()
+	ctx, _ := gin.CreateTestContext(recorder)
+
+	articleExpected := repository.DBArticle{
+		Id:     uuid.New().String(),
+		FeedId: uuid.New().String(),
+		Title:  "Super Article",
+		Source: "The Truth",
+		Author: "Unknown",
+		Link:   "https://thetruth.com",
+		Tags:   []string{"not", "true"},
+	}
+
+	chatExpected := repository.DBChat{
+		Id:             uuid.New().String(),
+		TelegramChatId: "124",
+		TelegramUserId: nil,
+		Tags:           []string{},
+	}
+
+	mockArticleRepository := new(repository.MocksArticleRepository)
+	repository.Article = mockArticleRepository
+
+	ctx.Set("chat", &chatExpected)
+
+	mockArticleRepository.On("GetByChatAndTime", chatExpected.Id).Return([]*repository.DBArticle{&articleExpected})
+
+	GetLatestArticleFromChat(ctx)
+
+	mockArticleRepository.AssertCalled(t, "GetByChatAndTime", chatExpected.Id)
+
+	var res Response
+	_ = json.Unmarshal(recorder.Body.Bytes(), &res)
+
+	assert.Equal(t, http.StatusOK, recorder.Result().StatusCode, "StatusCode should be OK")
+	assert.NotEmpty(t, res.Articles)
+	assert.Len(t, res.Articles, 1)
+}

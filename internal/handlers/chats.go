@@ -57,6 +57,11 @@ func DeleteChat(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"deleted": repository.Chat.Delete(chat.Id)})
 }
 
+// Road to get all chats
+func GetAllChats(c *gin.Context) {
+	c.JSON(http.StatusOK, gin.H{"chats": repository.Chat.GetAll()})
+}
+
 // Retrieve all feeds link to a Chat
 func GetChatFeeds(c *gin.Context) {
 	chat := c.MustGet("chat").(*repository.DBChat)
@@ -145,4 +150,11 @@ func ParsedChat(c *gin.Context) {
 	repository.Chat.UpdateParsed(chat.Id)
 
 	c.JSON(http.StatusNoContent, gin.H{})
+}
+
+// Retrieve articles from latest chat
+func GetLatestArticleFromChat(c *gin.Context) {
+	chat := c.MustGet("chat").(*repository.DBChat)
+
+	c.JSON(http.StatusOK, gin.H{"articles": repository.Article.GetByChatAndTime(chat.Id)})
 }

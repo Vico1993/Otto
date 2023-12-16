@@ -468,3 +468,11 @@ func TestExecuteWithUpperCaseCategory(t *testing.T) {
 
 	assert.Nil(t, err, "The error object should be nil")
 }
+
+func TestCleanCategoriesWithTitleContainsWeirdText(t *testing.T) {
+	res := cleanCategories([]string{
+		"The little test and green pepper",
+	})
+
+	assert.Equal(t, []string{"little", "test", "green", "pepper"}, res)
+}

@@ -3,6 +3,7 @@ package cron
 import (
 	"errors"
 	"net/url"
+	"regexp"
 	"strings"
 
 	textrank "github.com/DavidBelicza/TextRank/v2"
@@ -64,28 +65,11 @@ func (p *parser) execute(articleRepository repository.IArticleRepository, feedId
 			feed.Link,
 			author,
 			item.Link,
-			p.cleanCategories(itemTags),
+			cleanCategories(itemTags),
 		)
 	}
 
 	return nil
-}
-
-func (p *parser) cleanCategories(categories []string) []string {
-	cats := []string{}
-
-	for _, category := range categories {
-		category := strings.ToLower(category)
-		if strings.Contains(category, " ") {
-			cats = append(cats, strings.Split(category, " ")...)
-		} else if strings.Contains(category, ",") {
-			cats = append(cats, strings.Split(category, ",")...)
-		} else {
-			cats = append(cats, category)
-		}
-	}
-
-	return cats
 }
 
 // Extract important word from the title
@@ -106,4 +90,25 @@ func (p *parser) findTagFromTitle(title string) []string {
 	}
 
 	return tags
+}
+
+// Clean categories string
+func cleanCategories(categories []string) []string {
+	cats := []string{}
+
+	for _, category := range categories {
+		category := strings.ToLower(category)
+
+		re := regexp.MustCompile(" |,")
+		cats = re.Split(category, -1)
+	}
+
+	for k, cat := range cats {
+		cat := cat
+
+		re := regexp.MustCompile(` and | ?the |\(|\)|\{|\}|\[|\]|&| to `)
+		cats[k] = re.ReplaceAllString(cat, "")
+	}
+
+	return cats
 }

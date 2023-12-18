@@ -46,7 +46,7 @@ require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/gin-gonic/gin v1.9.1
 	github.com/golang-migrate/migrate/v4 v4.16.2
-	github.com/google/uuid v1.4.0
+	github.com/google/uuid v1.5.0
 	github.com/jackc/pgx/v5 v5.5.1
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/mmcdole/goxpp v1.1.0 // indirect
